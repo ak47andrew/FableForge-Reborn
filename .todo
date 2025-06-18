@@ -1,0 +1,13 @@
+Core:
+* [X] ~~*Camera Zoom*~~ [2025-06-18]
+* [X] ~~*Camera Offset*~~ [2025-06-18]
+* [ ] Modes
+* [ ] Campaign seperation
+* [ ] Save/Load system
+* [ ] Nerworking (much later)
+
+Widgets:
+* [ ] Map
+* * [ ] Picture loading
+* [ ] Command line/Chat
+* [ ] Characters

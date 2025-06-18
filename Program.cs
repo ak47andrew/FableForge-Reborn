@@ -1,7 +1,8 @@
 ﻿using Raylib_cs;
 using System.Numerics;
 
-public class CameraDragExample
+
+public class VTT
 {
     static Camera2D camera;
     static Vector2 dragStartPosition;
@@ -10,6 +11,7 @@ public class CameraDragExample
     const float ZOOM_SPEED = 0.05f;
     const float MIN_ZOOM = 0.1f;
     const float MAX_ZOOM = 2f;
+    const bool DEBUG = false;
 
 
     public static void Main()
@@ -17,7 +19,7 @@ public class CameraDragExample
         const int screenWidth = 800;
         const int screenHeight = 600;
 
-        Raylib.InitWindow(screenWidth, screenHeight, "Camera Drag Example");
+        Raylib.InitWindow(screenWidth, screenHeight, "FableForge Reborn");
         Raylib.SetTargetFPS(60);
 
         // Initialize camera
@@ -110,13 +112,16 @@ public class CameraDragExample
 
     static void DrawGUI()
     {
-        // Draw fixed GUI elements (screen coordinates)
-        Raylib.DrawRectangle(10, 10, 200, 140, Color.SkyBlue);
-        Raylib.DrawText("Camera Position:", 20, 20, 20, Color.DarkBlue);
-        Raylib.DrawText($"X: {camera.Target.X:F2}, Y: {camera.Target.Y:F2}", 20, 50, 20, Color.DarkBlue);
-        Raylib.DrawText($"Zoom: {camera.Zoom:F2}x", 20, 80, 20, Color.DarkBlue);
-        float wheel = Raylib.GetMouseWheelMove();
-        if (wheel > 0) Raylib.DrawText("Scroll: UP", 20, 120, 20, Color.DarkGray);
-        else if (wheel < 0) Raylib.DrawText("Scroll: DOWN", 20, 120, 20, Color.Red);
+        if (DEBUG)
+        {
+            // Draw fixed GUI elements (screen coordinates)
+            Raylib.DrawRectangle(10, 10, 200, 140, Color.SkyBlue);
+            Raylib.DrawText("Camera Position:", 20, 20, 20, Color.DarkBlue);
+            Raylib.DrawText($"X: {camera.Target.X:F2}, Y: {camera.Target.Y:F2}", 20, 50, 20, Color.DarkBlue);
+            Raylib.DrawText($"Zoom: {camera.Zoom:F2}x", 20, 80, 20, Color.DarkBlue);
+            float wheel = Raylib.GetMouseWheelMove();
+            if (wheel > 0) Raylib.DrawText("Scroll: UP", 20, 120, 20, Color.DarkGray);
+            else if (wheel < 0) Raylib.DrawText("Scroll: DOWN", 20, 120, 20, Color.Red);
+        }
     }
 }
