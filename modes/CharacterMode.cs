@@ -1,6 +1,6 @@
 namespace Vtt.Modes;
 
-public class Cmd : Mode
+public class CharactersMode : Mode
 {
     public override void DrawHUD()
     {

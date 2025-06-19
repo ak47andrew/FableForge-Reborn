@@ -2,7 +2,7 @@ using Raylib_cs;
 
 namespace Vtt.Modes;
 
-public class Map : Mode
+public class MapMode : Mode
 {
     public override void DrawHUD()
     {

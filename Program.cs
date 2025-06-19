@@ -7,11 +7,10 @@ public class VTT
 {
     public static void Main()
     {
-
         Raylib.InitWindow((int)Settings.SCREEN.X, (int)Settings.SCREEN.Y, "FableForge Reborn");
         Raylib.SetTargetFPS(60);
 
-        State.mode = new Modes.Map();
+        State.mode = new Modes.MapMode();
 
         // Initialize camera
         State.camera = new Camera2D();
@@ -68,7 +67,6 @@ public class VTT
 
             State.camera.Target += mouseWorldPos - newMouseWorldPos;
         }
-
 
         if (State.isDragging)
         {
