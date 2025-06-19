@@ -1,52 +1,40 @@
 ﻿using Raylib_cs;
 using System.Numerics;
 
+namespace Vtt;
 
 public class VTT
 {
-    static Camera2D camera;
-    static Vector2 dragStartPosition;
-    static Vector2 dragStartCameraTarget;
-    static bool isDragging = false;
-    const float ZOOM_SPEED = 0.05f;
-    const float MIN_ZOOM = 0.1f;
-    const float MAX_ZOOM = 2f;
-    const bool DEBUG = false;
-
-
     public static void Main()
     {
-        const int screenWidth = 800;
-        const int screenHeight = 600;
 
-        Raylib.InitWindow(screenWidth, screenHeight, "FableForge Reborn");
+        Raylib.InitWindow((int)Settings.SCREEN.X, (int)Settings.SCREEN.Y, "FableForge Reborn");
         Raylib.SetTargetFPS(60);
 
+        State.mode = new Modes.Map();
+
         // Initialize camera
-        camera = new Camera2D();
-        camera.Target = Vector2.Zero;
-        camera.Offset = new Vector2(screenWidth / 2, screenHeight / 2); // Center camera
-        camera.Rotation = 0.0f;
-        camera.Zoom = 1.0f;
+        State.camera = new Camera2D();
+        State.camera.Target = Vector2.Zero;
+        State.camera.Offset = new Vector2(Settings.SCREEN.X / 2, Settings.SCREEN.Y / 2); // Center camera
+        State.camera.Rotation = 0.0f;
+        State.camera.Zoom = 1.0f;
 
         while (!Raylib.WindowShouldClose())
         {
-            // Update
-            UpdateCameraDrag();
-
-            // Draw
-            Raylib.BeginDrawing();
-            Raylib.ClearBackground(Color.LightGray);
-
-            // Draw game world with camera transformation
-            Raylib.BeginMode2D(camera);
-            DrawGameWorld();
-            Raylib.EndMode2D();
-
-            // Draw GUI (fixed screen position)
-            DrawGUI();
-
-            Raylib.EndDrawing();
+           UpdateCameraDrag();
+    
+            using (new DrawingContext())
+            {
+                Raylib.ClearBackground(Color.LightGray);
+                
+                using (new Mode2DContext(State.camera))
+                {
+                    DrawGameWorld();
+                }
+                
+                DrawGUI();
+            }
         }
 
         Raylib.CloseWindow();
@@ -57,71 +45,50 @@ public class VTT
         if (Raylib.IsMouseButtonPressed(MouseButton.Right))
         {
             // Start dragging
-            isDragging = true;
-            dragStartPosition = Raylib.GetMousePosition();
-            dragStartCameraTarget = camera.Target;
+            State.isDragging = true;
+            State.dragStartPosition = Raylib.GetMousePosition();
+            State.dragStartCameraTarget = State.camera.Target;
         }
         else if (Raylib.IsMouseButtonReleased(MouseButton.Right))
         {
             // Stop dragging
-            isDragging = false;
+            State.isDragging = false;
         }
 
         float wheel = Raylib.GetMouseWheelMove();
 
         if (wheel != 0)
         {
-            Vector2 mouseWorldPos = Raylib.GetScreenToWorld2D(Raylib.GetMousePosition(), camera);
+            Vector2 mouseWorldPos = Raylib.GetScreenToWorld2D(Raylib.GetMousePosition(), State.camera);
 
-            camera.Zoom += wheel * ZOOM_SPEED;
-            camera.Zoom = Math.Clamp(camera.Zoom, MIN_ZOOM, MAX_ZOOM);
+            State.camera.Zoom += wheel * Settings.ZOOM_SPEED;
+            State.camera.Zoom = Math.Clamp(State.camera.Zoom, Settings.MIN_ZOOM, Settings.MAX_ZOOM);
 
-            Vector2 newMouseWorldPos = Raylib.GetScreenToWorld2D(Raylib.GetMousePosition(), camera);
+            Vector2 newMouseWorldPos = Raylib.GetScreenToWorld2D(Raylib.GetMousePosition(), State.camera);
 
-            camera.Target += mouseWorldPos - newMouseWorldPos;
+            State.camera.Target += mouseWorldPos - newMouseWorldPos;
         }
 
 
-        if (isDragging)
+        if (State.isDragging)
         {
             // Calculate movement delta in screen space
             Vector2 currentMousePos = Raylib.GetMousePosition();
-            Vector2 delta = currentMousePos - dragStartPosition;
+            Vector2 delta = currentMousePos - State.dragStartPosition;
 
             // Convert screen delta to world delta (reverse direction)
-            delta /= camera.Zoom; // Adjust for zoom
-            camera.Target = dragStartCameraTarget - delta;
+            delta /= State.camera.Zoom; // Adjust for zoom
+            State.camera.Target = State.dragStartCameraTarget - delta;
         }
     }
 
     static void DrawGameWorld()
     {
-        // Draw grid (world coordinates)
-        for (int x = -1000; x <= 1000; x += 100)
-        {
-            Raylib.DrawLine(x, -1000, x, 1000, Color.DarkGray);
-        }
-        for (int y = -1000; y <= 1000; y += 100)
-        {
-            Raylib.DrawLine(-1000, y, 1000, y, Color.DarkGray);
-        }
-
-        // Draw origin marker
-        Raylib.DrawCircle(0, 0, 10, Color.Red);
+        State.mode.DrawObjects();
     }
 
     static void DrawGUI()
     {
-        if (DEBUG)
-        {
-            // Draw fixed GUI elements (screen coordinates)
-            Raylib.DrawRectangle(10, 10, 200, 140, Color.SkyBlue);
-            Raylib.DrawText("Camera Position:", 20, 20, 20, Color.DarkBlue);
-            Raylib.DrawText($"X: {camera.Target.X:F2}, Y: {camera.Target.Y:F2}", 20, 50, 20, Color.DarkBlue);
-            Raylib.DrawText($"Zoom: {camera.Zoom:F2}x", 20, 80, 20, Color.DarkBlue);
-            float wheel = Raylib.GetMouseWheelMove();
-            if (wheel > 0) Raylib.DrawText("Scroll: UP", 20, 120, 20, Color.DarkGray);
-            else if (wheel < 0) Raylib.DrawText("Scroll: DOWN", 20, 120, 20, Color.Red);
-        }
+        State.mode.DrawHUD();
     }
 }
