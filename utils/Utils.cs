@@ -1,6 +1,6 @@
 using Raylib_cs;
 
-namespace Vtt;
+namespace Vtt.Utils;
 
 public class DrawingContext : IDisposable
 {

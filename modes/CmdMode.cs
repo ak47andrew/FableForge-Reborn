@@ -2,12 +2,12 @@ namespace Vtt.Modes;
 
 public class CmdMode : Mode
 {
-    public override void DrawHUD()
+    public override void Draw()
     {
         throw new NotImplementedException();
     }
 
-    public override void DrawObjects()
+    public override void Update(float deltaTime)
     {
         throw new NotImplementedException();
     }

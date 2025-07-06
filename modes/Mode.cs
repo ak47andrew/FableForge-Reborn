@@ -2,6 +2,6 @@ namespace Vtt.Modes;
 
 public abstract class Mode
 {
-    public abstract void DrawObjects();
-    public abstract void DrawHUD();
+    public abstract void Draw();
+    public abstract void Update(float deltaTime);
 }
