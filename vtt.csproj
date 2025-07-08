@@ -11,4 +11,9 @@
     <PackageReference Include="Raylib-cs" Version="7.0.1" />
   </ItemGroup>
 
+ <ItemGroup>
+    <None Update="resources\*">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 </Project>

@@ -2,26 +2,26 @@ using Raylib_cs;
 
 namespace Vtt.Managers;
 
-public class ImageController
+public class ImageManager
 {
-    private static ImageController instance;
+    private static ImageManager instance;
 
     private Dictionary<string, Texture2D> textureCache = new Dictionary<string, Texture2D>();
     private Dictionary<string, string> aliases = new Dictionary<string, string>();
 
-    private ImageController()
+    private ImageManager()
     { }
 
-    public static ImageController getInstance()
+    public static ImageManager getInstance()
     {
         if (instance == null)
-            instance = new ImageController();
+            instance = new ImageManager();
         return instance;
     }
 
     public string LoadImage(string imagePath)
     {
-        Image image = Raylib.LoadImage($"resources/{imagePath}");
+        Image image = Raylib.LoadImage(Path.Combine("resources", imagePath));
         Texture2D texture = Raylib.LoadTextureFromImage(image);
         Raylib.UnloadImage(image); // Image no longer needed
 

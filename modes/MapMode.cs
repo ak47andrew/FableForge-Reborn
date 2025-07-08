@@ -1,5 +1,7 @@
+using Microsoft.VisualBasic;
 using Raylib_cs;
 using System.Numerics;
+using Vtt.Managers;
 using Vtt.Utils;
 
 namespace Vtt.Modes;
@@ -18,6 +20,8 @@ public class MapMode : Mode
         camera.Offset = new Vector2(Settings.SCREEN.X / 2, Settings.SCREEN.Y / 2); // Center camera
         camera.Rotation = 0.0f;
         camera.Zoom = 1.0f;
+
+        ImageManager.getInstance().LoadImage("bg.png");
 
         isDragging = false;
     }
@@ -97,17 +101,25 @@ public class MapMode : Mode
 
     public void DrawObjects()
     {
-        // Draw grid (world coordinates)
-        for (int x = -1000; x <= 1000; x += 100)
+        Texture2D? tmp = ImageManager.getInstance().GetTexture("bg.png");
+        if (!tmp.HasValue)
         {
-            Raylib.DrawLine(x, -1000, x, 1000, Color.DarkGray);
+            return;
         }
-        for (int y = -1000; y <= 1000; y += 100)
+        Texture2D tex = tmp.Value;
+
+        Raylib.DrawTexture(tex, 0, 0, Color.White);
+
+        for (int x = 0; x <= tex.Width; x += 100)
         {
-            Raylib.DrawLine(-1000, y, 1000, y, Color.DarkGray);
+            Raylib.DrawLine(x, 0, x, tex.Height, Color.DarkGray);
+        }
+        for (int y = 0; y <= tex.Height; y += 100)
+        {
+            Raylib.DrawLine(0, y, tex.Width, y, Color.DarkGray);
         }
 
-        // Draw origin marker
-        Raylib.DrawCircle(0, 0, 10, Color.Red);
+        // // Draw origin marker
+        // Raylib.DrawCircle(0, 0, 10, Color.Red);
     }
 }
