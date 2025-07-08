@@ -1,0 +1,58 @@
+using Raylib_cs;
+
+namespace Vtt.Managers;
+
+public class ImageController
+{
+    private static ImageController instance;
+
+    private Dictionary<string, Texture2D> textureCache = new Dictionary<string, Texture2D>();
+    private Dictionary<string, string> aliases = new Dictionary<string, string>();
+
+    private ImageController()
+    { }
+
+    public static ImageController getInstance()
+    {
+        if (instance == null)
+            instance = new ImageController();
+        return instance;
+    }
+
+    public string LoadImage(string imagePath)
+    {
+        Image image = Raylib.LoadImage($"resources/{imagePath}");
+        Texture2D texture = Raylib.LoadTextureFromImage(image);
+        Raylib.UnloadImage(image); // Image no longer needed
+
+        string key = imagePath.Replace("/", "-").Replace("\\", "-");
+        textureCache[key] = texture;
+        return key;
+    }
+
+    public void CreateAlias(string alias, string initKey)
+    {
+        aliases[alias] = initKey;
+    }
+
+    public Texture2D? GetTexture(string key)
+    {
+        if (aliases.ContainsKey(key))
+        {
+            key = aliases[key];
+        }
+        if (textureCache.ContainsKey(key))
+        {
+            return textureCache[key];
+        }
+        Console.WriteLine($"[WARNING] Texture not found: {key}");
+        return null;
+    }
+
+    public void UnloadAll()
+    {
+        foreach (var texture in textureCache.Values)
+            Raylib.UnloadTexture(texture);
+        textureCache.Clear();
+    }
+}

@@ -1,4 +1,6 @@
-namespace Vtt.Modes;
+using Vtt.Modes;
+
+namespace Vtt.Managers;
 
 public class ModeManager
 {
