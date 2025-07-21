@@ -1,8 +1,8 @@
-using Microsoft.VisualBasic;
 using Raylib_cs;
 using System.Numerics;
 using Vtt.Managers;
 using Vtt.Utils;
+using Vtt.Widgets;
 
 namespace Vtt.Modes;
 
@@ -12,6 +12,11 @@ public class MapMode : Mode
     bool isDragging;
     Vector2 dragStartPosition;
     Vector2 dragStartCameraTarget;
+    Button<ModeManager> buttonToCharacterSheets1;
+    Button<ModeManager> buttonToCharacterSheets2;
+    Button<ModeManager> buttonToCharacterSheets3;
+    Button<ModeManager> buttonToCharacterSheets4;
+    Button<ModeManager> buttonToCharacterSheets5;
 
     public MapMode()
     {
@@ -24,6 +29,37 @@ public class MapMode : Mode
         ImageManager.getInstance().LoadImage("bg.png");
 
         isDragging = false;
+
+        buttonToCharacterSheets1 = new Button<ModeManager>(
+            new Vector2(0, 0),
+            new Vector2(Settings.BASE_UI_SIZE, Settings.BASE_UI_SIZE),
+            manager => Console.WriteLine("LOG!!!"), // manager.setMode(new CharacterListMode()),
+            ModeManager.getInstance()
+        );
+        buttonToCharacterSheets2 = new Button<ModeManager>(
+            new Vector2(0, Settings.BASE_UI_SIZE + 3),
+            new Vector2(Settings.BASE_UI_SIZE, Settings.BASE_UI_SIZE),
+            manager => Console.WriteLine("LOG!!!"), // manager.setMode(new CharacterListMode()),
+            ModeManager.getInstance()
+        );
+        buttonToCharacterSheets3 = new Button<ModeManager>(
+            new Vector2(0, Settings.BASE_UI_SIZE * 2 + 6),
+            new Vector2(Settings.BASE_UI_SIZE, Settings.BASE_UI_SIZE),
+            manager => Console.WriteLine("LOG!!!"), // manager.setMode(new CharacterListMode()),
+            ModeManager.getInstance()
+        );
+        buttonToCharacterSheets4 = new Button<ModeManager>(
+            new Vector2(0, Settings.BASE_UI_SIZE * 3 + 9),
+            new Vector2(Settings.BASE_UI_SIZE, Settings.BASE_UI_SIZE),
+            manager => Console.WriteLine("LOG!!!"), // manager.setMode(new CharacterListMode()),
+            ModeManager.getInstance()
+        );
+        buttonToCharacterSheets5 = new Button<ModeManager>(
+            new Vector2(0, Settings.BASE_UI_SIZE * 4 + 12),
+            new Vector2(Settings.BASE_UI_SIZE, Settings.BASE_UI_SIZE),
+            manager => Console.WriteLine("LOG!!!"), // manager.setMode(new CharacterListMode()),
+            ModeManager.getInstance()
+        );
     }
 
     public override void Draw()
@@ -39,6 +75,11 @@ public class MapMode : Mode
     public override void Update(float deltaTime)
     {
         UpdateCameraDrag();
+        buttonToCharacterSheets5.Update(deltaTime);
+        buttonToCharacterSheets4.Update(deltaTime);
+        buttonToCharacterSheets3.Update(deltaTime);
+        buttonToCharacterSheets2.Update(deltaTime);
+        buttonToCharacterSheets1.Update(deltaTime);
     }
 
     void UpdateCameraDrag()
@@ -97,6 +138,12 @@ public class MapMode : Mode
             else if (wheel < 0) Raylib.DrawText("Scroll: DOWN", 20, 120, 20, Color.Red);
 #pragma warning restore CS0162 // Unreachable code detected
         }
+
+        buttonToCharacterSheets5.Draw();
+        buttonToCharacterSheets4.Draw();
+        buttonToCharacterSheets3.Draw();
+        buttonToCharacterSheets2.Draw();
+        buttonToCharacterSheets1.Draw();
     }
 
     public void DrawObjects()

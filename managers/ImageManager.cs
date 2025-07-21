@@ -4,18 +4,19 @@ namespace Vtt.Managers;
 
 public class ImageManager
 {
-    private static ImageManager instance;
+    private static ImageManager? instance;
 
     private Dictionary<string, Texture2D> textureCache = new Dictionary<string, Texture2D>();
     private Dictionary<string, string> aliases = new Dictionary<string, string>();
 
     private ImageManager()
-    { }
+    {
+        
+    }
 
     public static ImageManager getInstance()
     {
-        if (instance == null)
-            instance = new ImageManager();
+        instance ??= new ImageManager();
         return instance;
     }
 
