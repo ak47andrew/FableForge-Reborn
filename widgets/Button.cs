@@ -1,12 +1,13 @@
 using System.Numerics;
 using Raylib_cs;
+using Vtt.Managers;
 using static Vtt.Utils.Utils;
 
 namespace Vtt.Widgets;
 
 delegate void OnClickCallback<T>(T classType);
 
-enum ButtonMode
+public enum ButtonMode
 {
     Disabled,
     Normal,
@@ -30,7 +31,7 @@ class Button<T> : Widget
                 mode = value;
                 deltaColor = 0f;
                 previousColor = nextColor;
-                nextColor = GetButtonColor();
+                nextColor = BS.GetButtonColor(mode);
             }
         }
     }
@@ -43,16 +44,20 @@ class Button<T> : Widget
     Color previousColor;
     Color nextColor;
     float deltaColor = 1f;
+    ButtonStyle BS;
+    Texture2D? Icon;
 
-    public Button(Vector2 position, Vector2 size, OnClickCallback<T> onClick, T classInstance)
+    public Button(Vector2 position, Vector2 size, OnClickCallback<T> onClick, T classInstance, ButtonStyle buttonStyle, string icon_token = "")
     {
         Position = position;
         Size = size;
-        Mode = ButtonMode.Normal;
+        mode = ButtonMode.Normal;
         _buttonRect = new Rectangle(Position.X, Position.Y, Size.X, Size.Y);
         OnClick = onClick;
         ClassInstance = classInstance;
-        nextColor = GetButtonColor();
+        BS = buttonStyle;
+        nextColor = BS.GetButtonColor(Mode);
+        Icon = icon_token == "" ? null : ImageManager.getInstance().GetTexture(icon_token);
     }
 
     public override void Draw()
@@ -68,6 +73,63 @@ class Button<T> : Widget
             0.7f,  // Roundness (0-1)
             9,     // Segments
             ColorLerp(previousColor, nextColor, deltaColor)
+        );
+        RenderIcon();
+    }
+
+    public void RenderIcon()
+    {
+        if (Icon == null)
+        { return; }
+        // Get the button's content area (already scaled)
+        Rectangle contentRect = new Rectangle(
+            _buttonRect.Position.X,
+            _buttonRect.Position.Y,
+            _buttonRect.Width * _scale,
+            _buttonRect.Height * _scale
+        );
+
+        // Set padding percentage (adjust this value as needed)
+        const float PADDING_PERCENT = 0.05f; // 5% padding on all sides
+        
+        // Calculate padding amounts
+        float paddingX = contentRect.Width * PADDING_PERCENT;
+        float paddingY = contentRect.Height * PADDING_PERCENT;
+        
+        // Calculate available space for icon (after padding)
+        float availableWidth = contentRect.Width - (2 * paddingX);
+        float availableHeight = contentRect.Height - (2 * paddingY);
+
+        // Calculate aspect ratios
+        float buttonAspect = availableWidth / availableHeight;
+        float iconAspect = (float)Icon.Value.Width / Icon.Value.Height;
+
+        // Determine best fit scale factor
+        float scaleFactor;
+        if (iconAspect > buttonAspect) {
+            // Icon is wider than available space
+            scaleFactor = availableWidth / Icon.Value.Width;
+        } else {
+            // Icon is taller than available space
+            scaleFactor = availableHeight / Icon.Value.Height;
+        }
+
+        // Calculate final dimensions
+        float destWidth = Icon.Value.Width * scaleFactor;
+        float destHeight = Icon.Value.Height * scaleFactor;
+
+        // Center position calculation
+        float destX = contentRect.X + (contentRect.Width - destWidth) / 2;
+        float destY = contentRect.Y + (contentRect.Height - destHeight) / 2;
+
+        // Draw icon with calculated dimensions
+        Raylib.DrawTexturePro(
+            Icon.Value,
+            new Rectangle(0, 0, Icon.Value.Width, Icon.Value.Height),
+            new Rectangle(destX, destY, destWidth, destHeight),
+            Vector2.Zero,
+            0f,
+            Color.White
         );
     }
 
@@ -113,18 +175,6 @@ class Button<T> : Widget
 
         deltaColor += deltaTime * 4;
         deltaColor = Math.Min(deltaColor, 1f);
-    }
-
-    private Color GetButtonColor()
-    {
-        return Mode switch
-        {
-            ButtonMode.Disabled => new Color(160, 148, 145, 255),  // Cool slate gray
-            ButtonMode.Normal => new Color(255, 107, 107, 255),   // Vibrant blue
-            ButtonMode.Hovered => new Color(255, 140, 140, 255),   // Lighter blue
-            ButtonMode.Pressed => new Color(210, 77, 77, 255),    // Deep blue
-            _ => Color.White
-        };
     }
 
     public void SetActive(bool active)

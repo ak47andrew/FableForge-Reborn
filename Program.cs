@@ -14,18 +14,40 @@ public class VTT
 
         ModeManager manager = ModeManager.getInstance();
         manager.setMode(new MapMode());
+        
+        float returnToDebug = 0;
 
         while (!Raylib.WindowShouldClose())
         {
             manager.getCurrentMode().Update(Raylib.GetFrameTime());
 
+            if (Settings.DEBUG)
+            {                
+                if (Raylib.IsKeyDown(KeyboardKey.Backspace) && manager.getCurrentMode() is not DebugMode)
+                {
+                    returnToDebug += Raylib.GetFrameTime();
+                    Console.WriteLine($"Returning to DebugMode in {5 - returnToDebug} seconds...");
+                    if (returnToDebug > 5)
+                    {
+                        manager.setMode(new DebugMode());
+                        returnToDebug = 0;
+                    }
+                }
+                else
+                {
+                    returnToDebug = 0;
+                }
+            }
+
             using (new DrawingContext())
             {
-                Raylib.ClearBackground(Color.LightGray);
+                Raylib.ClearBackground(Color.DarkGray);
 
                 manager.getCurrentMode().Draw();
             }
         }
+
+        ImageManager.getInstance().UnloadAll();
 
         Raylib.CloseWindow();
     }
