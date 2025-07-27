@@ -22,11 +22,16 @@ public class ImageManager
 
     public string LoadImage(string imagePath)
     {
+        string key = imagePath.Replace("/", "-").Replace("\\", "-");
+        if (textureCache.ContainsKey(key))
+        {
+            return key;
+        }
+
         Image image = Raylib.LoadImage(Path.Combine("resources", imagePath));
         Texture2D texture = Raylib.LoadTextureFromImage(image);
         Raylib.UnloadImage(image); // Image no longer needed
 
-        string key = imagePath.Replace("/", "-").Replace("\\", "-");
         textureCache[key] = texture;
         return key;
     }
