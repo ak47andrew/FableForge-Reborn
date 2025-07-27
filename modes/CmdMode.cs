@@ -1,6 +1,6 @@
 namespace Vtt.Modes;
 
-public class CmdMode : Mode
+public class CmdMode : Mode  // Cmd/chat
 {
     public override void Draw()
     {

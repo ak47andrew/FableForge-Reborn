@@ -23,11 +23,11 @@ public class VTT
 
             if (Settings.DEBUG)
             {                
-                if (Raylib.IsKeyDown(KeyboardKey.Backspace) && manager.getCurrentMode() is not DebugMode)
+                if (Raylib.IsKeyDown(KeyboardKey.Enter) && Raylib.IsKeyDown(KeyboardKey.Backspace) && manager.getCurrentMode() is not DebugMode)
                 {
                     returnToDebug += Raylib.GetFrameTime();
-                    Console.WriteLine($"Returning to DebugMode in {5 - returnToDebug} seconds...");
-                    if (returnToDebug > 5)
+                    Console.WriteLine($"Returning to DebugMode in {Settings.ENTER_DEBUG_TIME - returnToDebug:F2} seconds...");
+                    if (returnToDebug > Settings.ENTER_DEBUG_TIME)
                     {
                         manager.setMode(new DebugMode());
                         returnToDebug = 0;

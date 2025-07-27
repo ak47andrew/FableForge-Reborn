@@ -9,5 +9,6 @@ public static class Settings
     public const float MAX_ZOOM = 2f;
     public const bool DEBUG = true;
     public const int BASE_UI_SIZE = 64;
-    public static Vector2 SCREEN = new Vector2(1280, 720);
+    public static Vector2 SCREEN = new(1280, 720);
+    public const float ENTER_DEBUG_TIME = 2;
 }

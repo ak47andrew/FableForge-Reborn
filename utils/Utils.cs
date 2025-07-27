@@ -1,4 +1,5 @@
 using Raylib_cs;
+using System.Numerics;
 
 namespace Vtt.Utils;
 
@@ -31,5 +32,11 @@ public static class Utils
             (byte)(a.B + (b.B - a.B) * t),
             (byte)(a.A + (b.A - a.A) * t)
         );
+    }
+
+    public static Vector2 GetWorldMousePosition(Camera2D camera)
+    {
+        Vector2 screenMousePos = Raylib.GetMousePosition();
+        return Raylib.GetScreenToWorld2D(screenMousePos, camera);
     }
 }

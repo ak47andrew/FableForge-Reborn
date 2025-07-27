@@ -137,8 +137,25 @@ class Button<T> : Widget
     {
         if (Mode == ButtonMode.Disabled) return;
 
-        Vector2 mousePosition = Raylib.GetMousePosition();
-        bool isMouseOver = Raylib.CheckCollisionPointRec(mousePosition, _buttonRect);
+        if (Mode == ButtonMode.Hovered && _scale < 1.05f)
+            _scale += deltaTime;
+        else if (Mode != ButtonMode.Hovered && _scale > 1.0f)
+            _scale -= deltaTime;
+
+        deltaColor += deltaTime * 4;
+        deltaColor = Math.Min(deltaColor, 1f);
+    }
+
+    public void handleMouse(Vector2? mousePosition = null)
+    {
+        if (Mode == ButtonMode.Disabled) return;
+
+        if (mousePosition == null)
+        {
+            mousePosition = Raylib.GetMousePosition();
+        }
+
+        bool isMouseOver = Raylib.CheckCollisionPointRec(mousePosition.Value, _buttonRect);
 
         switch (Mode)
         {
@@ -167,14 +184,6 @@ class Button<T> : Widget
                 }
                 break;
         }
-
-        if (Mode == ButtonMode.Hovered && _scale < 1.05f)
-            _scale += deltaTime;
-        else if (Mode != ButtonMode.Hovered && _scale > 1.0f)
-            _scale -= deltaTime;
-
-        deltaColor += deltaTime * 4;
-        deltaColor = Math.Min(deltaColor, 1f);
     }
 
     public void SetActive(bool active)

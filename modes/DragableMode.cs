@@ -20,12 +20,6 @@ public abstract class DragableMode : Mode
         isDragging = false;
     }
 
-    public Vector2 GetWorldMousePosition()
-    {
-        Vector2 screenMousePos = Raylib.GetMousePosition();
-        return Raylib.GetScreenToWorld2D(screenMousePos, camera);
-    }
-
     public override void Draw()
     {
         using (new Mode2DContext(camera))
