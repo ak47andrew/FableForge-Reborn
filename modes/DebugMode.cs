@@ -12,56 +12,25 @@ public class DebugMode : DragableMode
     int MaxHeightDebugWindow = 0;
 
     // Buttons
-    Button<ModeManager> buttonToCharacterList;
-    Button<ModeManager> buttonToCharacter;
-    Button<ModeManager> buttonToCmd;
-    Button<ModeManager> buttonToMap;
+    ButtonCollection<ModeManager> buttonCollection;
 
     public DebugMode()
     {
-        buttonToCharacterList = new(
-            new Vector2(0, 0),
-            Vector2.One * Settings.BASE_UI_SIZE,
-            manager => manager.setMode(new CharacterListMode()),
-            ModeManager.getInstance(),
-            ButtonStyle.styleBlue
-        );
-        buttonToCharacter = new(
-            new Vector2(Settings.BASE_UI_SIZE * 2, 0),
-            Vector2.One * Settings.BASE_UI_SIZE,
-            manager => manager.setMode(new CharactersMode()),
-            ModeManager.getInstance(),
-            ButtonStyle.styleOrange
-        );
-        buttonToCmd = new(
-            new Vector2(Settings.BASE_UI_SIZE * 4, 0),
-            Vector2.One * Settings.BASE_UI_SIZE,
-            manager => manager.setMode(new CmdMode()),
-            ModeManager.getInstance(),
-            ButtonStyle.styleRed
-        );
-        buttonToMap = new(
-            new Vector2(Settings.BASE_UI_SIZE * 6, 0),
-            Vector2.One * Settings.BASE_UI_SIZE,
-            manager => manager.setMode(new MapMode()),
-            ModeManager.getInstance(),
-            ButtonStyle.styleGreen
-        );
+        buttonCollection = new ButtonCollection<ModeManager>(new Vector2(), [
+            [
+                new ButtonCollectionEntry<ModeManager>(manager => manager.setMode(new CharacterListMode()), ModeManager.getInstance(), ButtonStyle.styleBlue),
+                new ButtonCollectionEntry<ModeManager>(manager => manager.setMode(new CharactersMode()), ModeManager.getInstance(), ButtonStyle.styleOrange),
+                new ButtonCollectionEntry<ModeManager>(manager => manager.setMode(new CmdMode()), ModeManager.getInstance(), ButtonStyle.styleRed),
+                new ButtonCollectionEntry<ModeManager>(manager => manager.setMode(new MapMode()), ModeManager.getInstance(), ButtonStyle.styleGreen),
+            ]
+        ]);
     }
 
     public override void Update(float deltaTime)
     {
         base.Update(deltaTime);
 
-        buttonToCharacterList.Update(deltaTime);
-        buttonToCharacter.Update(deltaTime);
-        buttonToCmd.Update(deltaTime);
-        buttonToMap.Update(deltaTime);
-
-        buttonToCharacterList.handleMouse(GetWorldMousePosition(camera));
-        buttonToCharacter.handleMouse(GetWorldMousePosition(camera));
-        buttonToCmd.handleMouse(GetWorldMousePosition(camera));
-        buttonToMap.handleMouse(GetWorldMousePosition(camera));
+        buttonCollection.Update(deltaTime, GetWorldMousePosition(camera));
     }
 
     public override void DrawHUD()
@@ -101,10 +70,7 @@ public class DebugMode : DragableMode
 
     public override void DrawObjects()
     {
-        buttonToCharacterList.Draw();
-        buttonToCharacter.Draw();
-        buttonToCmd.Draw();
-        buttonToMap.Draw();
+        buttonCollection.Draw();
 
         // Draw origin marker
         Raylib.DrawCircle(0, 0, 10, Color.Red);
