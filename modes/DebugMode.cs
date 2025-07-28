@@ -12,25 +12,45 @@ public class DebugMode : DragableMode
     int MaxHeightDebugWindow = 0;
 
     // Buttons
-    ButtonCollection<ModeManager> buttonCollection;
+    ButtonCollection<ModeManager> GotoButtons;
+    ButtonCollection<object> AllStylesButtons;
 
     public DebugMode()
     {
-        buttonCollection = new ButtonCollection<ModeManager>(new Vector2(), [
+        GotoButtons = new ButtonCollection<ModeManager>(new Vector2(), [
             [
-                new ButtonCollectionEntry<ModeManager>(manager => manager.setMode(new CharacterListMode()), ModeManager.getInstance(), ButtonStyle.styleBlue),
-                new ButtonCollectionEntry<ModeManager>(manager => manager.setMode(new CharactersMode()), ModeManager.getInstance(), ButtonStyle.styleOrange),
-                new ButtonCollectionEntry<ModeManager>(manager => manager.setMode(new CmdMode()), ModeManager.getInstance(), ButtonStyle.styleRed),
-                new ButtonCollectionEntry<ModeManager>(manager => manager.setMode(new MapMode()), ModeManager.getInstance(), ButtonStyle.styleGreen),
+                new (manager => manager.setMode(new CharacterListMode()), ModeManager.getInstance(), ButtonStyle.styleBlue),
+                new (manager => manager.setMode(new CharactersMode()), ModeManager.getInstance(), ButtonStyle.styleOrange),
+                new (manager => manager.setMode(new CmdMode()), ModeManager.getInstance(), ButtonStyle.styleRed),
+                new (manager => manager.setMode(new MapMode()), ModeManager.getInstance(), ButtonStyle.styleGreen),
             ]
         ]);
+        AllStylesButtons = new ButtonCollection<object>(new Vector2(600, 10), [
+            [
+                new(_ => Console.WriteLine("ButtonStyle.styleBlue"), new object(), ButtonStyle.styleBlue),
+                new(_ => Console.WriteLine("ButtonStyle.styleGreen"), new object(), ButtonStyle.styleGreen),
+                new(_ => Console.WriteLine("ButtonStyle.styleOrange"), new object(), ButtonStyle.styleOrange),
+            ],
+            [
+                new(_ => Console.WriteLine("ButtonStyle.styleMinimalLight"), new object(), ButtonStyle.styleMinimalLight),
+                null,
+                new(_ => Console.WriteLine("ButtonStyle.styleDark"), new object(), ButtonStyle.styleDark),
+            ],
+            [
+                new(_ => Console.WriteLine("ButtonStyle.stylePurple"), new object(), ButtonStyle.stylePurple),
+                new(_ => Console.WriteLine("ButtonStyle.styleGlass"), new object(), ButtonStyle.styleGlass),
+                new(_ => Console.WriteLine("ButtonStyle.styleRed"), new object(), ButtonStyle.styleRed),
+            ]
+        ], horizontalSpacing: 2, verticalSpacing: 2);
+            
     }
 
     public override void Update(float deltaTime)
     {
         base.Update(deltaTime);
 
-        buttonCollection.Update(deltaTime, GetWorldMousePosition(camera));
+        GotoButtons.Update(deltaTime, GetWorldMousePosition(camera));
+        AllStylesButtons.Update(deltaTime, GetWorldMousePosition(camera));
     }
 
     public override void DrawHUD()
@@ -70,9 +90,10 @@ public class DebugMode : DragableMode
 
     public override void DrawObjects()
     {
-        buttonCollection.Draw();
-
         // Draw origin marker
         Raylib.DrawCircle(0, 0, 10, Color.Red);
+
+        GotoButtons.Draw();
+        AllStylesButtons.Draw();
     }
 }
