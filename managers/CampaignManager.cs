@@ -6,9 +6,7 @@ public class CampaignManager
 {
     private static CampaignManager? instance;
 
-    private CampaignManager()
-    {
-    }
+    private CampaignManager() {  }
 
     public static CampaignManager getInstance()
     {
