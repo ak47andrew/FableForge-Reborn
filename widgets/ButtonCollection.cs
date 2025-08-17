@@ -46,7 +46,7 @@ class ButtonCollection<T>
                     entry.OnClick,
                     entry.ClassInstance,
                     entry.ButtonStyle,
-                    entry.IconToken
+                    icon_token:entry.IconToken
                 );
                 buttonsList.Add(button);
             }

@@ -133,3 +133,7 @@ $RECYCLE.BIN/
 _NCrunch*
 
 .diff
+
+# Removed docs directory temperarily. That'll take a huge chunk of time and I don't want to commit half-ready docs
+# This dir contains binary file format for characters and campaigns
+docs/

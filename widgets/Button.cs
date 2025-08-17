@@ -1,11 +1,12 @@
 using System.Numerics;
+using System.Security.Cryptography.X509Certificates;
 using Raylib_cs;
 using Vtt.Managers;
 using static Vtt.Utils.Utils;
 
 namespace Vtt.Widgets;
 
-delegate void OnClickCallback<T>(T classType);
+public delegate void OnClickCallback<T>(T classType);
 
 public enum ButtonMode
 {
@@ -15,7 +16,7 @@ public enum ButtonMode
     Pressed
 }
 
-class Button<T> : Widget
+public class Button<T> : Widget
 {
     Vector2 Position;
     Vector2 Size;
@@ -38,7 +39,7 @@ class Button<T> : Widget
 
 
     Rectangle _buttonRect;
-    OnClickCallback<T> OnClick;
+    OnClickCallback<T>? OnClick;
     T ClassInstance;
     float _scale = 1f;
     Color previousColor;
@@ -46,8 +47,9 @@ class Button<T> : Widget
     float deltaColor = 1f;
     ButtonStyle BS;
     Texture2D? Icon;
+    bool IsFlat;
 
-    public Button(Vector2 position, Vector2 size, OnClickCallback<T> onClick, T classInstance, ButtonStyle buttonStyle, string icon_token = "")
+    public Button(Vector2 position, Vector2 size, OnClickCallback<T>? onClick, T classInstance, ButtonStyle buttonStyle, bool isFlat = false, string icon_token = "")
     {
         Position = position;
         Size = size;
@@ -58,22 +60,35 @@ class Button<T> : Widget
         BS = buttonStyle;
         nextColor = BS.GetButtonColor(Mode);
         Icon = icon_token == "" ? null : ImageManager.getInstance().GetTexture(icon_token);
+        IsFlat = isFlat;
     }
 
     public override void Draw()
     {
-        Raylib.DrawRectangleRounded(
-            new Rectangle(_buttonRect.Position.X + 3, _buttonRect.Position.Y + 3, _buttonRect.Width * _scale, _buttonRect.Height * _scale),
-            0.7f,  // Roundness (0-1)
-            9,     // Segments
-            new Color(0, 0, 0, 50)
-        );
-        Raylib.DrawRectangleRounded(
-            new Rectangle(_buttonRect.Position.X, _buttonRect.Position.Y, _buttonRect.Width * _scale, _buttonRect.Height * _scale),
-            0.7f,  // Roundness (0-1)
-            9,     // Segments
-            ColorLerp(previousColor, nextColor, deltaColor)
-        );
+        if (!IsFlat)
+        {
+            Raylib.DrawRectangleRounded(
+                new Rectangle(_buttonRect.Position.X + 3, _buttonRect.Position.Y + 3, _buttonRect.Width * _scale, _buttonRect.Height * _scale),
+                0.7f,  // Roundness (0-1)
+                9,     // Segments
+                new Color(0, 0, 0, 50)
+            );
+            Raylib.DrawRectangleRounded(
+                new Rectangle(_buttonRect.Position.X, _buttonRect.Position.Y, _buttonRect.Width * _scale, _buttonRect.Height * _scale),
+                0.7f,  // Roundness (0-1)
+                9,     // Segments
+                ColorLerp(previousColor, nextColor, deltaColor)
+            );
+        }
+        else
+        {
+            Raylib.DrawRectangleRounded(
+                new Rectangle(_buttonRect.Position.X, _buttonRect.Position.Y, _buttonRect.Width, _buttonRect.Height),
+                0.7f,  // Roundness (0-1)
+                9,     // Segments
+                ColorLerp(previousColor, nextColor, deltaColor)
+            );
+        }
         RenderIcon();
     }
 
@@ -175,7 +190,7 @@ class Button<T> : Widget
                     if (isMouseOver)
                     {
                         Mode = ButtonMode.Hovered;
-                        OnClick.Invoke(ClassInstance);
+                        OnClick?.Invoke(ClassInstance);
                     }
                     else
                     {

@@ -13,7 +13,7 @@ public class VTT
         Raylib.SetTargetFPS(60);
 
         ModeManager manager = ModeManager.getInstance();
-        manager.setMode(new MapMode());
+        manager.setMode(new DebugMode());
         
         float returnToDebug = 0;
 

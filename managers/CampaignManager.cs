@@ -45,6 +45,7 @@ public class CampaignManager
 
     private string GetPath(string name)
     {
-        return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "FableForge-Reborn", "campaigns", name + ".ffc");
+        return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                            "FableForge-Reborn", "campaigns", name + ".ffc");
     }
 }

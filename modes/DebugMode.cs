@@ -14,9 +14,12 @@ public class DebugMode : DragableMode
     // Buttons
     ButtonCollection<ModeManager> GotoButtons;
     ButtonCollection<object> AllStylesButtons;
+    Choice choice;
 
     public DebugMode()
     {
+        string key = ImageManager.getInstance().LoadImage("logo.png");
+
         GotoButtons = new ButtonCollection<ModeManager>(new Vector2(), [
             [
                 new (manager => manager.setMode(new CharacterListMode()), ModeManager.getInstance(), ButtonStyle.styleBlue),
@@ -42,7 +45,7 @@ public class DebugMode : DragableMode
                 new(_ => Console.WriteLine("ButtonStyle.styleRed"), new object(), ButtonStyle.styleRed),
             ]
         ], horizontalSpacing: 2, verticalSpacing: 2);
-            
+        choice = new(new (1000, 50), new (120, 200), "Pipi", ImageManager.getInstance().GetTexture(key), ButtonStyle.styleGreen, camera);
     }
 
     public override void Update(float deltaTime)
@@ -51,6 +54,7 @@ public class DebugMode : DragableMode
 
         GotoButtons.Update(deltaTime, GetWorldMousePosition(camera));
         AllStylesButtons.Update(deltaTime, GetWorldMousePosition(camera));
+        choice.Update(deltaTime);
     }
 
     public override void DrawHUD()
@@ -95,5 +99,6 @@ public class DebugMode : DragableMode
 
         GotoButtons.Draw();
         AllStylesButtons.Draw();
+        choice.Draw();
     }
 }
