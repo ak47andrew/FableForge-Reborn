@@ -11,7 +11,7 @@ public class Choice : Widget
     public Vector2 Position;
     public Vector2 Size;
     public Camera2D? Camera;
-    public Button<object>? ActionButton;  // FIXME: Replace with actual class type
+    public Button? ActionButton;  // FIXME: Replace with actual class type
     public float VSpacing;
     public float HSpacing;
 
@@ -36,8 +36,7 @@ public class Choice : Widget
                 Size.X - HSpacing * 2,
                 buttonHeight - VSpacing * 2
             ),
-            _ => Console.WriteLine("Button clicked"),
-            new object(),
+            () => Console.WriteLine("Button clicked"),
             buttonStyle,
             true
         );

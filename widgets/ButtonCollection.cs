@@ -2,30 +2,28 @@ using System.Numerics;
 
 namespace Vtt.Widgets;
 
-class ButtonCollectionEntry<T>
+class ButtonCollectionEntry
 {
-    public OnClickCallback<T> OnClick;
-    public T ClassInstance;
+    public Action OnClick;
     public ButtonStyle ButtonStyle;
     public string IconToken;
 
-    public ButtonCollectionEntry(OnClickCallback<T> onClick, T classInstance, ButtonStyle buttonStyle, string iconToken = "")
+    public ButtonCollectionEntry(Action onClick, ButtonStyle buttonStyle, string iconToken = "")
     {
         OnClick = onClick;
-        ClassInstance = classInstance;
         ButtonStyle = buttonStyle;
         IconToken = iconToken;
     }
 }
 
-class ButtonCollection<T>
+class ButtonCollection
 {
-    Button<T>[] buttons;
+    Button[] buttons;
 
-    public ButtonCollection(Vector2 position, ButtonCollectionEntry<T>?[][] grid, Vector2? size = null,
+    public ButtonCollection(Vector2 position, ButtonCollectionEntry?[][] grid, Vector2? size = null,
                             int horizontalSpacing = Settings.BASE_UI_SIZE, int verticalSpacing = Settings.BASE_UI_SIZE)
     {
-        List<Button<T>> buttonsList = new();
+        List<Button> buttonsList = new();
         if (size == null)
         {
             size = Vector2.One * Settings.BASE_UI_SIZE;
@@ -35,16 +33,15 @@ class ButtonCollection<T>
         {
             for (int j = 0; j < grid[i].Length; j++)
             {
-                ButtonCollectionEntry<T>? entry = grid[i][j];
+                ButtonCollectionEntry? entry = grid[i][j];
                 if (entry == null)
                 {
                     continue;
                 }
-                var button = new Button<T>(
+                var button = new Button(
                     position + new Vector2(j * (horizontalSpacing + size.Value.X), i * (verticalSpacing + size.Value.Y)),
                     size.Value,
                     entry.OnClick,
-                    entry.ClassInstance,
                     entry.ButtonStyle,
                     icon_token:entry.IconToken
                 );

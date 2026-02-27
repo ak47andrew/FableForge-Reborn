@@ -12,37 +12,37 @@ public class DebugMode : DragableMode
     int MaxHeightDebugWindow = 0;
 
     // Buttons
-    ButtonCollection<ModeManager> GotoButtons;
-    ButtonCollection<object> AllStylesButtons;
+    ButtonCollection GotoButtons;
+    ButtonCollection AllStylesButtons;
     Choice choice;
 
     public DebugMode()
     {
         string key = ImageManager.getInstance().LoadImage("logo.png");
 
-        GotoButtons = new ButtonCollection<ModeManager>(new Vector2(), [
+        GotoButtons = new ButtonCollection(new Vector2(), [
             [
-                new (manager => manager.setMode(new CharacterListMode()), ModeManager.getInstance(), ButtonStyle.styleBlue),
-                new (manager => manager.setMode(new CharactersMode()), ModeManager.getInstance(), ButtonStyle.styleOrange),
-                new (manager => manager.setMode(new CmdMode()), ModeManager.getInstance(), ButtonStyle.styleRed),
-                new (manager => manager.setMode(new MapMode()), ModeManager.getInstance(), ButtonStyle.styleGreen),
+                new (() => ModeManager.getInstance().setMode(new CharacterListMode()), ButtonStyle.styleBlue),
+                new (() => ModeManager.getInstance().setMode(new CharactersMode()), ButtonStyle.styleOrange),
+                new (() => ModeManager.getInstance().setMode(new CmdMode()), ButtonStyle.styleRed),
+                new (() => ModeManager.getInstance().setMode(new MapMode()), ButtonStyle.styleGreen),
             ]
         ]);
-        AllStylesButtons = new ButtonCollection<object>(new Vector2(600, 10), [
+        AllStylesButtons = new ButtonCollection(new Vector2(600, 10), [
             [
-                new(_ => Console.WriteLine("ButtonStyle.styleBlue"), new object(), ButtonStyle.styleBlue),
-                new(_ => Console.WriteLine("ButtonStyle.styleGreen"), new object(), ButtonStyle.styleGreen),
-                new(_ => Console.WriteLine("ButtonStyle.styleOrange"), new object(), ButtonStyle.styleOrange),
+                new(() => Console.WriteLine("ButtonStyle.styleBlue"), ButtonStyle.styleBlue),
+                new(() => Console.WriteLine("ButtonStyle.styleGreen"), ButtonStyle.styleGreen),
+                new(() => Console.WriteLine("ButtonStyle.styleOrange"), ButtonStyle.styleOrange),
             ],
             [
-                new(_ => Console.WriteLine("ButtonStyle.styleMinimalLight"), new object(), ButtonStyle.styleMinimalLight),
+                new(() => Console.WriteLine("ButtonStyle.styleMinimalLight"), ButtonStyle.styleMinimalLight),
                 null,
-                new(_ => Console.WriteLine("ButtonStyle.styleDark"), new object(), ButtonStyle.styleDark),
+                new(() => Console.WriteLine("ButtonStyle.styleDark"), ButtonStyle.styleDark),
             ],
             [
-                new(_ => Console.WriteLine("ButtonStyle.stylePurple"), new object(), ButtonStyle.stylePurple),
-                new(_ => Console.WriteLine("ButtonStyle.styleGlass"), new object(), ButtonStyle.styleGlass),
-                new(_ => Console.WriteLine("ButtonStyle.styleRed"), new object(), ButtonStyle.styleRed),
+                new(() => Console.WriteLine("ButtonStyle.stylePurple"), ButtonStyle.stylePurple),
+                new(() => Console.WriteLine("ButtonStyle.styleGlass"), ButtonStyle.styleGlass),
+                new(() => Console.WriteLine("ButtonStyle.styleRed"), ButtonStyle.styleRed),
             ]
         ], horizontalSpacing: 2, verticalSpacing: 2);
         choice = new(new (1000, 50), new (120, 200), "Pipi", ImageManager.getInstance().GetTexture(key), ButtonStyle.styleGreen, camera);

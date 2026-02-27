@@ -1,12 +1,9 @@
 using System.Numerics;
-using System.Security.Cryptography.X509Certificates;
 using Raylib_cs;
 using Vtt.Managers;
 using static Vtt.Utils.Utils;
 
 namespace Vtt.Widgets;
-
-public delegate void OnClickCallback<T>(T classType);
 
 public enum ButtonMode
 {
@@ -16,7 +13,7 @@ public enum ButtonMode
     Pressed
 }
 
-public class Button<T> : Widget
+public class Button : Widget
 {
     Vector2 Position;
     Vector2 Size;
@@ -39,8 +36,7 @@ public class Button<T> : Widget
 
 
     Rectangle _buttonRect;
-    OnClickCallback<T>? OnClick;
-    T ClassInstance;
+    Action OnClick;
     float _scale = 1f;
     Color previousColor;
     Color nextColor;
@@ -49,14 +45,13 @@ public class Button<T> : Widget
     Texture2D? Icon;
     bool IsFlat;
 
-    public Button(Vector2 position, Vector2 size, OnClickCallback<T>? onClick, T classInstance, ButtonStyle buttonStyle, bool isFlat = false, string icon_token = "")
+    public Button(Vector2 position, Vector2 size, Action onClick, ButtonStyle buttonStyle, bool isFlat = false, string icon_token = "")
     {
         Position = position;
         Size = size;
         mode = ButtonMode.Normal;
         _buttonRect = new Rectangle(Position.X, Position.Y, Size.X, Size.Y);
         OnClick = onClick;
-        ClassInstance = classInstance;
         BS = buttonStyle;
         nextColor = BS.GetButtonColor(Mode);
         Icon = icon_token == "" ? null : ImageManager.getInstance().GetTexture(icon_token);
@@ -190,7 +185,7 @@ public class Button<T> : Widget
                     if (isMouseOver)
                     {
                         Mode = ButtonMode.Hovered;
-                        OnClick?.Invoke(ClassInstance);
+                        OnClick?.Invoke();
                     }
                     else
                     {
