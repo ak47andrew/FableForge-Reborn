@@ -45,16 +45,21 @@ public class DebugMode : DragableMode
                 new(() => Console.WriteLine("ButtonStyle.styleRed"), ButtonStyle.styleRed),
             ]
         ], horizontalSpacing: 2, verticalSpacing: 2);
-        choice = new(new (1000, 50), new (120, 200), "Pipi", ImageManager.getInstance().GetTexture(key), ButtonStyle.styleGreen, camera);
+        choice = new(new (1000, 50), new (120, 200), "Pipi", ImageManager.getInstance().GetTexture(key), new MinimalButton(() => Console.WriteLine("BIBA!"), ButtonStyle.styleGreen, isFlat:true));
     }
 
     public override void Update(float deltaTime)
     {
         base.Update(deltaTime);
 
-        GotoButtons.Update(deltaTime, GetWorldMousePosition(camera));
-        AllStylesButtons.Update(deltaTime, GetWorldMousePosition(camera));
+        GotoButtons.Update(deltaTime);
+        GotoButtons.HandleMouse(GetWorldMousePosition(camera));
+
+        AllStylesButtons.Update(deltaTime);
+        AllStylesButtons.HandleMouse(GetWorldMousePosition(camera));
+
         choice.Update(deltaTime);
+        choice.HandleMouse(GetWorldMousePosition(camera));
     }
 
     public override void DrawHUD()
@@ -62,8 +67,8 @@ public class DebugMode : DragableMode
         float wheel = Raylib.GetMouseWheelMove();
         Vector2 mouseWorldPos = GetWorldMousePosition(camera);
 
-        List<string> strings = new()
-        {
+        List<string> strings =
+        [
             "Camera Position:",
             $"X: {camera.Target.X:F2}, Y: {camera.Target.Y:F2}",
             "Mouse Position (Screen):",
@@ -71,7 +76,7 @@ public class DebugMode : DragableMode
             "Mouse Position (World):",
             $"X: {mouseWorldPos.X}, Y: {mouseWorldPos.Y}",
             $"Zoom: {camera.Zoom:F2}x",
-        };
+        ];
         if (wheel > 0) strings.Add("Scroll: UP");
         else if (wheel < 0) strings.Add("Scroll: DOWN");
         strings.Add($"FPS: {Raylib.GetFPS()}");
@@ -80,7 +85,7 @@ public class DebugMode : DragableMode
 
     void DrawDebugText(List<string> texts)
     {
-        MaxWidthDebugWindow = Math.Max(texts.Select(text => Raylib.MeasureText(text, 22)).Max(), MaxWidthDebugWindow);
+        MaxWidthDebugWindow = Math.Max(texts.Max(text => Raylib.MeasureText(text, 22)), MaxWidthDebugWindow);
         MaxHeightDebugWindow = Math.Max((texts.Count + 1) * 20, MaxHeightDebugWindow);
         Raylib.DrawRectangle(10, 10, MaxWidthDebugWindow, MaxHeightDebugWindow, new Color(
             102, 191, 255, 100

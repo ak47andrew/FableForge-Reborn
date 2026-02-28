@@ -208,3 +208,31 @@ public class Button : Widget
         }
     }
 }
+
+public class MinimalButton
+{
+    public Action OnClick;
+    public ButtonStyle ButtonStyle;
+    public string IconToken;
+    public bool IsFlat;
+
+    public MinimalButton(Action onClick, ButtonStyle buttonStyle, string iconToken = "", bool isFlat = false)
+    {
+        OnClick = onClick;
+        ButtonStyle = buttonStyle;
+        IconToken = iconToken;
+        IsFlat = isFlat;
+    }
+
+    public Button ToButton(Vector2 position, Vector2 size)
+    {
+        return new Button(
+            position,
+            size,
+            OnClick,
+            ButtonStyle,
+            IsFlat,
+            IconToken
+        );
+    }
+}

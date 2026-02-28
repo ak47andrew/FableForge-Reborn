@@ -2,25 +2,11 @@ using System.Numerics;
 
 namespace Vtt.Widgets;
 
-class ButtonCollectionEntry
-{
-    public Action OnClick;
-    public ButtonStyle ButtonStyle;
-    public string IconToken;
-
-    public ButtonCollectionEntry(Action onClick, ButtonStyle buttonStyle, string iconToken = "")
-    {
-        OnClick = onClick;
-        ButtonStyle = buttonStyle;
-        IconToken = iconToken;
-    }
-}
-
-class ButtonCollection
+class ButtonCollection : Widget
 {
     Button[] buttons;
 
-    public ButtonCollection(Vector2 position, ButtonCollectionEntry?[][] grid, Vector2? size = null,
+    public ButtonCollection(Vector2 position, MinimalButton?[][] grid, Vector2? size = null,
                             int horizontalSpacing = Settings.BASE_UI_SIZE, int verticalSpacing = Settings.BASE_UI_SIZE)
     {
         List<Button> buttonsList = new();
@@ -33,17 +19,14 @@ class ButtonCollection
         {
             for (int j = 0; j < grid[i].Length; j++)
             {
-                ButtonCollectionEntry? entry = grid[i][j];
+                MinimalButton? entry = grid[i][j];
                 if (entry == null)
                 {
                     continue;
                 }
-                var button = new Button(
+                var button = entry.ToButton(
                     position + new Vector2(j * (horizontalSpacing + size.Value.X), i * (verticalSpacing + size.Value.Y)),
-                    size.Value,
-                    entry.OnClick,
-                    entry.ButtonStyle,
-                    icon_token:entry.IconToken
+                    size.Value                    
                 );
                 buttonsList.Add(button);
             }
@@ -52,7 +35,7 @@ class ButtonCollection
         buttons = buttonsList.ToArray();
     }
 
-    public void Draw()
+    public override void Draw()
     {
         foreach (var button in buttons)
         {
@@ -60,11 +43,18 @@ class ButtonCollection
         }
     }
 
-    public void Update(float deltaTime, Vector2? mousePosition = null)
+    public override void Update(float deltaTime)
     {
         foreach (var button in buttons)
         {
             button.Update(deltaTime);
+        }
+    }
+
+    public void HandleMouse(Vector2? mousePosition = null)
+    {
+        foreach (var button in buttons)
+        {
             button.handleMouse(mousePosition);
         }
     }

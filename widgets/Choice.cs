@@ -1,6 +1,5 @@
 using System.Numerics;
 using Raylib_cs;
-using static Vtt.Utils.Utils;
 
 namespace Vtt.Widgets;
 
@@ -10,12 +9,11 @@ public class Choice : Widget
     public Texture2D? Texture;
     public Vector2 Position;
     public Vector2 Size;
-    public Camera2D? Camera;
-    public Button? ActionButton;  // FIXME: Replace with actual class type
+    public Button? ActionButton;
     public float VSpacing;
     public float HSpacing;
 
-    public Choice(Vector2 position, Vector2 size, string label, Texture2D? texture = null, ButtonStyle? buttonStyle = null, Camera2D? camera = null)
+    public Choice(Vector2 position, Vector2 size, string label, Texture2D? texture = null, MinimalButton? button = null)
     {
         Position = position;
         Size = size;
@@ -27,7 +25,7 @@ public class Choice : Widget
 
         Label = label;
         Texture = texture;
-        ActionButton = buttonStyle == null ? null : new (
+        ActionButton = button == null ? null : button.ToButton(
             new Vector2(
                 Position.X + HSpacing,
                 Position.Y + Size.X + VSpacing * 2 + (spaceLeft - VSpacing) / 3
@@ -35,12 +33,8 @@ public class Choice : Widget
             new Vector2(
                 Size.X - HSpacing * 2,
                 buttonHeight - VSpacing * 2
-            ),
-            () => Console.WriteLine("Button clicked"),
-            buttonStyle,
-            true
+            )
         );
-        Camera = camera;
     }
 
     public override void Draw()
@@ -85,6 +79,10 @@ public class Choice : Widget
     public override void Update(float deltaTime)
     {
         ActionButton?.Update(deltaTime);
-        ActionButton?.handleMouse(Camera == null ? Raylib.GetMousePosition() : GetWorldMousePosition(Camera.Value));
+    }
+
+    public void HandleMouse(Vector2 mouse)
+    {
+        ActionButton?.handleMouse(mouse);
     }
 }
