@@ -2,6 +2,7 @@ mod config;
 mod managers;
 mod modes;
 mod utils;
+mod widgets;
 
 use raylib::prelude::*;
 use crate::managers::ModeManager;
