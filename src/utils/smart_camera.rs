@@ -3,7 +3,7 @@ use raylib::RaylibHandle;
 use crate::config::{MAX_ZOOM, MIN_ZOOM, SCREEN, ZOOM_SPEED};
 
 pub struct SmartCamera {
-    pub camera: Camera2D,
+    pub  camera: Camera2D,
     is_dragging: bool,
     drag_start_position: Vector2,
     drag_start_camera_target: Vector2

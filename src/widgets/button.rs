@@ -164,7 +164,7 @@ impl Widget for Button {
             );
         }
 
-        // if self.is_flat - _scale is always gonna be 1.0, so we can just plug the same thing
+        // if self.is_flat, _scale is always gonna be 1.0, so we can just plug the same thing
         d.draw_rectangle_rounded(
             Rectangle::new(self.butt_rect.x, self.butt_rect.y,
                            self.butt_rect.width * self.scale, self.butt_rect.height * self.scale),
