@@ -1,0 +1,47 @@
+mod config;
+mod managers;
+mod modes;
+mod utils;
+mod widgets;
+
+use raylib::prelude::*;
+use crate::managers::ModeManager;
+use crate::modes::DebugMode;
+
+fn main() {
+    let (mut rl, thread) = raylib::init()
+        .vsync()
+        .size(640, 480)
+        .title("Hello, World")
+        .build();
+
+    let mut mode_manager = ModeManager::new(Box::new(DebugMode::new()));
+
+    let mut return_to_debug = 0.0f32;
+
+    while !rl.window_should_close() {
+        let dt = rl.get_frame_time();
+
+        if config::DEBUG {
+            if rl.is_key_down(KeyboardKey::KEY_ENTER) && rl.is_key_down(KeyboardKey::KEY_BACKSPACE) &&
+                mode_manager.get_current_mode().as_any().downcast_ref::<DebugMode>().is_none() {
+                return_to_debug += dt;
+                println!("Returning to DebugMode in {} seconds...", config::ENTER_DEBUG_TIME - return_to_debug);
+                if return_to_debug > config::ENTER_DEBUG_TIME {
+                    mode_manager.set_mode(Box::new(DebugMode::new()));
+                    return_to_debug = 0.0;
+                }
+            } else {
+                return_to_debug = 0.0;
+            }
+        }
+
+        let current_mode = mode_manager.get_current_mode();
+
+        current_mode.update(&rl, dt);
+
+        let mut d = rl.begin_drawing(&thread);
+        d.clear_background(Color::DARKGRAY);
+        current_mode.draw(&mut d);
+    }
+}
