@@ -122,7 +122,7 @@ impl<Event> Button<Event> {
         )
     }
 
-    pub fn handle_mouse(&mut self, rl: &RaylibHandle, mouse_pos: Option<Vector2>) -> Option<Vec<Event>> {
+    pub fn handle_mouse(&mut self, rl: &RaylibHandle, mouse_pos: Option<Vector2>) -> Vec<Event> {
         let mouse_pos = mouse_pos.unwrap_or(rl.get_mouse_position());
         let is_mouse_over = self.butt_rect.check_collision_point_rec(mouse_pos);
         match self.button_mode {
@@ -137,8 +137,8 @@ impl<Event> Button<Event> {
                 if rl.is_mouse_button_released(MouseButton::MOUSE_BUTTON_LEFT) {
                     if is_mouse_over {
                         self.set_mode(ButtonMode::Hovered);
-                        if self.on_click.is_some() {
-                            return Some(self.on_click.as_mut().unwrap()());
+                        if let Some(callback) = &mut self.on_click {
+                            return callback();
                         }
                     } else {
                         self.set_mode(ButtonMode::Normal);
@@ -147,7 +147,7 @@ impl<Event> Button<Event> {
             }
             ButtonMode::Disabled => {}
         };
-        None
+        vec![]
     }
 }
 
@@ -196,4 +196,17 @@ impl<Event> Widget for Button<Event> {
         self.delta_color += dt * 4.0;
         self.delta_color = self.delta_color.min(1.0);
     }
+}
+
+#[macro_export]
+macro_rules! collect_events {
+    ($ty:ty; $($expr:expr),* $(,)?) => {{
+        let events: Vec<$ty> = [
+            $($expr),*
+        ]
+        .into_iter()
+        .flatten()
+        .collect();
+        events
+    }};
 }
