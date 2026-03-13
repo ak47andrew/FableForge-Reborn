@@ -7,6 +7,7 @@ use crate::config::BASE_UI_SCALE;
 use crate::modes::Mode;
 use crate::utils::SmartCamera;
 use crate::widgets::{Button, ButtonStyle, Widget};
+use crate::collect_events;
 
 enum ButtonEvents {
     CounterChange(i32),
@@ -81,26 +82,19 @@ impl Mode for DebugMode {
     }
 
     fn update(&mut self, rl: &RaylibHandle, dt: f32) {
-        let mut events = vec![];
-
         self.camera.update_camera(rl);
 
         self.butt_add.update(rl, dt);
         self.butt_remove.update(rl, dt);
         self.butt_change_color.update(rl, dt);
 
-        let output = self.butt_add.handle_mouse(rl, Some(rl.get_screen_to_world2D(rl.get_mouse_position(), self.camera.camera)));
-        if let Some(event) = output {
-            events.extend(event);
-        }
-        let output = self.butt_remove.handle_mouse(rl, Some(rl.get_screen_to_world2D(rl.get_mouse_position(), self.camera.camera)));
-        if let Some(event) = output {
-            events.extend(event);
-        }
-        let output = self.butt_change_color.handle_mouse(rl, Some(rl.get_screen_to_world2D(rl.get_mouse_position(), self.camera.camera)));
-        if let Some(event) = output {
-            events.extend(event);
-        }
+        let mouse_pos = Some(rl.get_screen_to_world2D(rl.get_mouse_position(), self.camera.camera));
+        let events: Vec<ButtonEvents> = collect_events![ButtonEvents;
+            self.butt_add.handle_mouse(rl, mouse_pos),
+            self.butt_remove.handle_mouse(rl, mouse_pos),
+            self.butt_change_color.handle_mouse(rl, mouse_pos),
+        ];
+
 
         self.handle_event(events);
     }
