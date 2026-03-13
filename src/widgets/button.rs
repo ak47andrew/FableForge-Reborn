@@ -15,12 +15,12 @@ pub enum ButtonMode {
     Pressed,
 }
 
-pub struct Button {
+pub struct Button<Event> {
     pos: Vector2,
     size: Vector2,
     button_style: ButtonStyle,
 
-    on_click: Option<Box<dyn FnMut()>>,
+    on_click: Option<Box<dyn FnMut() -> Vec<Event>>>,
     icon: Option<Texture2D>,
     is_flat: bool,
 
@@ -32,7 +32,7 @@ pub struct Button {
     delta_color: f32,
 }
 
-impl Button {
+impl<Event> Button<Event> {
     pub fn new(pos: Vector2, size: Vector2, button_style: ButtonStyle) -> Self {
         let button_mode = ButtonMode::Normal;
         let next_color = button_style.get_button_color(&button_mode);
@@ -54,7 +54,7 @@ impl Button {
         }
     }
 
-    pub fn set_on_click<F: FnMut() + 'static>(mut self, f: F) -> Self {
+    pub fn set_on_click<F: FnMut() -> Vec<Event> + 'static>(mut self, f: F) -> Self {
         self.on_click = Some(Box::new(f));
         self
     }
@@ -122,7 +122,7 @@ impl Button {
         )
     }
 
-    pub fn handle_mouse(&mut self, rl: &RaylibHandle, mouse_pos: Option<Vector2>) {
+    pub fn handle_mouse(&mut self, rl: &RaylibHandle, mouse_pos: Option<Vector2>) -> Option<Vec<Event>> {
         let mouse_pos = mouse_pos.unwrap_or(rl.get_mouse_position());
         let is_mouse_over = self.butt_rect.check_collision_point_rec(mouse_pos);
         match self.button_mode {
@@ -138,21 +138,20 @@ impl Button {
                     if is_mouse_over {
                         self.set_mode(ButtonMode::Hovered);
                         if self.on_click.is_some() {
-                            self.on_click.as_mut().unwrap()();
+                            return Some(self.on_click.as_mut().unwrap()());
                         }
                     } else {
                         self.set_mode(ButtonMode::Normal);
                     }
                 }
             }
-            ButtonMode::Disabled => {
-                return;
-            }
-        }
+            ButtonMode::Disabled => {}
+        };
+        None
     }
 }
 
-impl Widget for Button {
+impl<Event> Widget for Button<Event> {
     fn draw(&self, d: &mut RaylibDrawHandle) {
         if !self.is_flat {
             d.draw_rectangle_rounded(

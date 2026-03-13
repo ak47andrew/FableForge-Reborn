@@ -2,10 +2,10 @@ use raylib::prelude::Color;
 use crate::widgets::ButtonMode;
 
 pub struct ButtonStyle {
-    disabled_color: Color,
-    normal_color: Color,
-    hovered_color: Color,
-    pressed_color: Color,
+    pub disabled_color: Color,
+    pub normal_color: Color,
+    pub hovered_color: Color,
+    pub pressed_color: Color,
 }
 
 impl ButtonStyle {
