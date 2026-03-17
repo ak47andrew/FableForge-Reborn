@@ -8,6 +8,7 @@ use crate::modes::Mode;
 use crate::utils::SmartCamera;
 use crate::widgets::{Button, ButtonStyle, Widget};
 use crate::collect_events;
+use crate::widgets::button::MinimalButton;
 
 enum ButtonEvents {
     CounterChange(i32),
@@ -30,28 +31,28 @@ impl DebugMode {
             butt_add: Button::new(
                 Vector2::new(100.0, 150.0),
                 Vector2::new(10.0 * BASE_UI_SCALE as f32, 10.0 * BASE_UI_SCALE as f32),
-                ButtonStyle::STYLE_GREEN
-            ).set_on_click(
-                || {vec![ButtonEvents::CounterChange(1), ButtonEvents::ChangeColor(ButtonStyle::STYLE_GREEN.normal_color)]}
+                MinimalButton::new(ButtonStyle::STYLE_GREEN).set_on_click(
+                    || {vec![ButtonEvents::CounterChange(1), ButtonEvents::ChangeColor(ButtonStyle::STYLE_GREEN.normal_color)]}
+                )
             ),
             butt_remove: Button::new(
                 Vector2::new(300.0, 150.0),
                 Vector2::new(10.0 * BASE_UI_SCALE as f32, 10.0 * BASE_UI_SCALE as f32),
-                ButtonStyle::STYLE_RED
-            ).set_on_click(
-                || {vec![ButtonEvents::CounterChange(-1), ButtonEvents::ChangeColor(ButtonStyle::STYLE_RED.normal_color)]}
+                MinimalButton::new(ButtonStyle::STYLE_RED).set_on_click(
+                    || {vec![ButtonEvents::CounterChange(-1), ButtonEvents::ChangeColor(ButtonStyle::STYLE_RED.normal_color)]}
+                )
             ),
             butt_change_color: Button::new(
                 Vector2::new(200.0, 300.0),
                 Vector2::new(10.0 * BASE_UI_SCALE as f32, 10.0 * BASE_UI_SCALE as f32),
-                ButtonStyle::STYLE_PURPLE
-            ).set_on_click(
-                || {vec![ButtonEvents::ChangeColor(Color::new(
-                    random(),
-                    random(),
-                    random(),
-                    255
-                ))]}
+                MinimalButton::new(ButtonStyle::STYLE_PURPLE).set_on_click(
+                    || {vec![ButtonEvents::ChangeColor(Color::new(
+                        random(),
+                        random(),
+                        random(),
+                        255
+                    ))]}
+                )
             ),
             counter: 0,
             text_color: Color::BLACK
