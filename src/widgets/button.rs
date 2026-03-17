@@ -15,14 +15,10 @@ pub enum ButtonMode {
     Pressed,
 }
 
-pub struct Button<Event> {
-    pos: Vector2,
-    size: Vector2,
-    button_style: ButtonStyle,
+type OnClickAction<Event> = Box<dyn FnMut() -> Vec<Event>>;
 
-    on_click: Option<Box<dyn FnMut() -> Vec<Event>>>,
-    icon: Option<Texture2D>,
-    is_flat: bool,
+pub struct Button<Event> {
+    config: MinimalButton<Event>,
 
     button_mode: ButtonMode,
     butt_rect: Rectangle,
@@ -33,17 +29,11 @@ pub struct Button<Event> {
 }
 
 impl<Event> Button<Event> {
-    pub fn new(pos: Vector2, size: Vector2, button_style: ButtonStyle) -> Self {
+    pub fn new(pos: Vector2, size: Vector2, config: MinimalButton<Event>) -> Self {
         let button_mode = ButtonMode::Normal;
-        let next_color = button_style.get_button_color(&button_mode);
+        let next_color = config.button_style.get_button_color(&button_mode);
         Button {
-            pos,
-            size,
-            button_style,
-
-            on_click: None,
-            icon: None,
-            is_flat: false,
+            config,
 
             button_mode,
             butt_rect: Rectangle::new(pos.x, pos.y, size.x, size.y),
@@ -54,19 +44,16 @@ impl<Event> Button<Event> {
         }
     }
 
-    pub fn set_on_click<F: FnMut() -> Vec<Event> + 'static>(mut self, f: F) -> Self {
-        self.on_click = Some(Box::new(f));
-        self
+    pub fn set_on_click<F: FnMut() -> Vec<Event> + 'static>(&mut self, f: F) {
+        self.config.on_click = Some(Box::new(f));
     }
 
-    pub fn flatten(mut self) -> Self {
-        self.is_flat = true;
-        self
+    pub fn flatten(&mut self) {
+        self.config.is_flat = true;
     }
 
-    pub fn with_icon(mut self, texture: Texture2D) -> Self {
-        self.icon = Some(texture);
-        self
+    pub fn with_icon(&mut self, texture: Texture2D) {
+        self.config.icon = Some(texture);
     }
 
     pub fn get_mode(&self) -> &ButtonMode {
@@ -77,13 +64,13 @@ impl<Event> Button<Event> {
         self.button_mode = mode;
         self.delta_color = 0.0;
         self.prev_color = self.next_color;
-        self.next_color = self.button_style.get_button_color(&self.button_mode);
+        self.next_color = self.config.button_style.get_button_color(&self.button_mode);
     }
 
     fn render_icon(&self, d: &mut RaylibDrawHandle) {
-        if self.icon.is_none() {return;}
-        let icon_width = self.icon.as_ref().unwrap().width as f32;
-        let icon_height = self.icon.as_ref().unwrap().height as f32;
+        if self.config.icon.is_none() {return;}
+        let icon_width = self.config.icon.as_ref().unwrap().width as f32;
+        let icon_height = self.config.icon.as_ref().unwrap().height as f32;
 
         const PADDING_PERCENT: f32 = 0.05;
 
@@ -113,7 +100,7 @@ impl<Event> Button<Event> {
         let dest_y = rect.y + (rect.height - dest_height) / 2.0;
 
         d.draw_texture_pro(
-            self.icon.as_ref().unwrap(),
+            self.config.icon.as_ref().unwrap(),
             Rectangle::new(0.0, 0.0, icon_width, icon_height),
             Rectangle::new(dest_x, dest_y, dest_width, dest_height),
             Vector2::zero(),
@@ -137,7 +124,7 @@ impl<Event> Button<Event> {
                 if rl.is_mouse_button_released(MouseButton::MOUSE_BUTTON_LEFT) {
                     if is_mouse_over {
                         self.set_mode(ButtonMode::Hovered);
-                        if let Some(callback) = &mut self.on_click {
+                        if let Some(callback) = &mut self.config.on_click {
                             return callback();
                         }
                     } else {
@@ -149,11 +136,19 @@ impl<Event> Button<Event> {
         };
         vec![]
     }
+
+    pub fn config(&self) -> &MinimalButton<Event> {
+        &self.config
+    }
+
+    pub fn config_mut(&mut self) -> &mut MinimalButton<Event> {
+        &mut self.config
+    }
 }
 
 impl<Event> Widget for Button<Event> {
     fn draw(&self, d: &mut RaylibDrawHandle) {
-        if !self.is_flat {
+        if !self.config.is_flat {
             d.draw_rectangle_rounded(
                 Rectangle::new(self.butt_rect.x + 3.0, self.butt_rect.y + 3.0,
                     self.butt_rect.width * self.scale, self.butt_rect.height * self.scale),
@@ -196,6 +191,39 @@ impl<Event> Widget for Button<Event> {
 
         self.delta_color += dt * 4.0;
         self.delta_color = self.delta_color.min(1.0);
+    }
+}
+
+pub struct MinimalButton<Event> {
+    on_click: Option<OnClickAction<Event>>,
+    button_style: ButtonStyle,
+    icon: Option<Texture2D>,
+    is_flat: bool,
+}
+
+impl<Event> MinimalButton<Event> {
+    pub fn new(button_style: ButtonStyle) -> Self {
+        MinimalButton {
+            on_click: None,
+            button_style,
+            icon: None,
+            is_flat: false,
+        }
+    }
+
+    pub fn set_on_click<F: FnMut() -> Vec<Event> + 'static>(mut self, f: F) -> Self {
+        self.on_click = Some(Box::new(f));
+        self
+    }
+
+    pub fn flatten(mut self) -> Self {
+        self.is_flat = true;
+        self
+    }
+
+    pub fn with_icon(mut self, texture: Texture2D) -> Self {
+        self.icon = Some(texture);
+        self
     }
 }
 
