@@ -177,9 +177,10 @@ impl<Event> Widget for Button<Event> {
     fn update(&mut self, _rl: &RaylibHandle, dt: f32) {
         match self.button_mode {
             ButtonMode::Disabled => {
+                self.delta_color = 1.0;
                 return;
             }
-            ButtonMode::Hovered => {  // FIXME: panics here or a bit lower. Figure out wtf is going on here
+            ButtonMode::Hovered => {
                 if self.scale < 1.05 {
                     self.scale += dt;
                     self.scale = self.scale.min(1.05);

@@ -95,7 +95,6 @@ impl Mode for DebugMode {
             self.butt_change_color.handle_mouse(rl, mouse_pos),
         ];
 
-
         self.handle_event(events);
     }
     fn as_any(&self) -> &dyn Any {
