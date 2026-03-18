@@ -13,17 +13,19 @@ impl<Event> ButtonCollection<Event> {
     pub fn new(pos: Vector2, grid: Vec<Vec<Option<MinimalButton<Event>>>>, config: ButtonCollectionConfig) -> ButtonCollection<Event> {
         let mut buttons = vec![];
 
-        for i in 0..grid.len() {
-            for j in 0..grid[i].len() {
-                let button = match grid[i][j] { // FIXME: will not compile
-                    None => {continue;}
-                    Some(mb) => {Button::new(
-                        pos + Vector2::new(j as f32 * (config.horizontal_spacing as f32 + config.size.x), i as f32 * (config.vertical_spacing as f32 + config.size.y)),
+        for (i, row) in grid.into_iter().enumerate() {
+            for (j, cell) in row.into_iter().enumerate() {
+                if let Some(mb) = cell {
+                    let button = Button::new(
+                        pos + Vector2::new(
+                            j as f32 * (config.horizontal_spacing as f32 + config.size.x),
+                            i as f32 * (config.vertical_spacing as f32 + config.size.y)
+                        ),
                         config.size,
                         mb
-                    )}
-                };
-                buttons.push(button);
+                    );
+                    buttons.push(button);
+                }
             }
         }
 
