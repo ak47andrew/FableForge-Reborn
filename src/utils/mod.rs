@@ -1,5 +1,7 @@
-mod smart_camera;
-mod helper;
+pub mod smart_camera;
+pub mod helper;
+pub mod context;
 
 pub use smart_camera::SmartCamera;
 pub use helper::*;
+pub use context::Context;
