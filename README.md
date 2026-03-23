@@ -1,5 +1,7 @@
 # Virtual Tabletop: FableForge Reborn
 
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/ak47andrew/FableForge-Reborn)
+
 ![](logo.png)
 
 *(September 20th 2025: Temorarily frozen because I'm busy working on a project for my conference. I'll continue working after I'll finish it)*<br>
