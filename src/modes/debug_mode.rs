@@ -6,39 +6,37 @@ use rand::random;
 use crate::config::BASE_UI_SCALE;
 use crate::modes::Mode;
 use crate::utils::{Context, SmartCamera};
-
-enum ButtonEvents {
-    CounterChange(i32),
-    ChangeColor(Color)
-}
+use crate::utils::context::UpdateContext;
+use crate::widgets::abc::{Positioned, Widget};
+use crate::widgets::nice_red_square::NiceRedSquare;
 
 pub struct DebugMode {
     camera: SmartCamera,
     counter: i32,
-    text_color: Color
+    text_color: Color,
+    nrq: Positioned<NiceRedSquare>
 }
 
 impl DebugMode {
     fn draw_world(&self, d: &mut RaylibMode2D<RaylibDrawHandle>) {
         d.draw_text(format!("Counter: {}", self.counter).as_str(), 0, 0, 120, self.text_color);
-    }
-
-    fn handle_event(&mut self, events: Vec<ButtonEvents>) {
-        for event in events {
-            match event {
-                ButtonEvents::CounterChange(v) => {self.counter += v}
-                ButtonEvents::ChangeColor(c) => {self.text_color = c}
-            }
-        }
+        self.nrq.draw(d);
     }
 }
 
 impl Mode for DebugMode {
-    fn new(context: &mut Context) -> Self {
+    fn new(_: &mut Context) -> Self {
         DebugMode {
             camera: SmartCamera::new(),
             counter: 0,
-            text_color: Color::BLACK
+            text_color: Color::BLACK,
+            nrq: Positioned {
+                widget: Box::from(NiceRedSquare::new(
+                    Vector2::new(10.0 * BASE_UI_SCALE as f32, 10.0 * BASE_UI_SCALE as f32),
+                    Color::RED
+                )),
+                position: Vector2::zero()
+            }
         }
     }
 
@@ -48,6 +46,10 @@ impl Mode for DebugMode {
 
     fn update(&mut self, context: &mut Context, dt: f32) {
         self.camera.update_camera(context.rl);
+        self.nrq.update(context, &UpdateContext {
+            dt,
+            mouse_pos: Vector2::zero(),  // FIXME: placeholder
+        })
     }
     fn as_any(&self) -> &dyn Any {
         self

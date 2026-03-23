@@ -16,7 +16,7 @@ fn main() {
         .title("Hello, World")
         .build();
     let mut mode_manager = {
-        let mut context = Context::new(&mut rl, &mut thread);
+        let mut context = Context{rl: &mut rl, thread: &mut thread };
         ModeManager::new(Box::new(DebugMode::new(&mut context)))
     };
 
@@ -29,7 +29,7 @@ fn main() {
             if config::DEBUG {
                 if rl.is_key_down(KeyboardKey::KEY_ENTER) && rl.is_key_down(KeyboardKey::KEY_BACKSPACE) &&
                     mode_manager.get_current_mode().as_any().downcast_ref::<DebugMode>().is_none() {
-                    let mut context = Context::new(&mut rl, &mut thread);
+                    let mut context = Context{rl: &mut rl, thread: &mut thread };
                     return_to_debug += dt;
                     println!("Returning to DebugMode in {} seconds...", config::ENTER_DEBUG_TIME - return_to_debug);
                     if return_to_debug > config::ENTER_DEBUG_TIME {
@@ -42,7 +42,7 @@ fn main() {
             }
 
 
-            let mut context = Context::new(&mut rl, &mut thread);
+            let mut context = Context{rl: &mut rl, thread: &mut thread };
             mode_manager.get_current_mode().update(&mut context, dt);
         }
 
