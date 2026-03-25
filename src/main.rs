@@ -13,6 +13,7 @@ fn main() {
         .build();
 
     let mut camera = SmartCamera::new();
+    let bg_texture = rl.load_texture(&thread, "logo.png").expect("Failed to load texture");
 
     while !rl.window_should_close() {
         // Update
@@ -21,17 +22,17 @@ fn main() {
         // Draw
         let mut d = rl.begin_drawing(&thread);
 
-        d.clear_background(Color::WHITE);
+        d.clear_background(Color::DARKGRAY);
 
-        camera.draw_world(&mut d, draw_world);
+        camera.draw_world(&mut d, |dd| draw_world(dd, &bg_texture));
         draw_gui(&mut d);
     }
 }
 
-fn draw_world(d: &mut RaylibMode2D<RaylibDrawHandle>) {
-    d.draw_rectangle(0, 0, 100, 100, Color::RED);
+fn draw_world(d: &mut RaylibMode2D<RaylibDrawHandle>, bg: &Texture2D) {
+    d.draw_texture(bg, 0, 0, Color::WHITE);
 }
 
 fn draw_gui(d: &mut RaylibDrawHandle) {
-    d.draw_text("Hello, world!", 12, 12, 20, Color::BLACK);
+    // d.draw_text("Hello, world!", 12, 12, 20, Color::BLACK);
 }
