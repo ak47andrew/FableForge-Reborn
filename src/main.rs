@@ -1,53 +1,37 @@
+mod smart_camera;
 mod config;
-mod managers;
-mod modes;
-mod utils;
-mod widgets;
 
 use raylib::prelude::*;
-use crate::managers::ModeManager;
-use crate::modes::{DebugMode, Mode};
-use crate::utils::Context;
+use crate::config::SCREEN;
+use crate::smart_camera::SmartCamera;
 
 fn main() {
     let (mut rl, mut thread) = init()
         .vsync()
-        .size(640, 480)
+        .size(SCREEN.x as i32, SCREEN.y as i32)
         .title("Hello, World")
         .build();
-    let mut mode_manager = {
-        let mut context = Context{rl: &mut rl, thread: &mut thread };
-        ModeManager::new(Box::new(DebugMode::new(&mut context)))
-    };
 
-    let mut return_to_debug = 0.0f32;
+    let mut camera = SmartCamera::new();
 
     while !rl.window_should_close() {
-        let dt = rl.get_frame_time();
-        {
+        // Update
+        camera.update_camera(&mut rl);
 
-            if config::DEBUG {
-                if rl.is_key_down(KeyboardKey::KEY_ENTER) && rl.is_key_down(KeyboardKey::KEY_BACKSPACE) &&
-                    mode_manager.get_current_mode().as_any().downcast_ref::<DebugMode>().is_none() {
-                    let mut context = Context{rl: &mut rl, thread: &mut thread };
-                    return_to_debug += dt;
-                    println!("Returning to DebugMode in {} seconds...", config::ENTER_DEBUG_TIME - return_to_debug);
-                    if return_to_debug > config::ENTER_DEBUG_TIME {
-                        mode_manager.set_mode(Box::new(DebugMode::new(&mut context)));
-                        return_to_debug = 0.0;
-                    }
-                } else {
-                    return_to_debug = 0.0;
-                }
-            }
-
-
-            let mut context = Context{rl: &mut rl, thread: &mut thread };
-            mode_manager.get_current_mode().update(&mut context, dt);
-        }
-
+        // Draw
         let mut d = rl.begin_drawing(&thread);
-        d.clear_background(Color::DARKGRAY);
-        mode_manager.get_current_mode().draw(&mut d);
+
+        d.clear_background(Color::WHITE);
+
+        camera.draw_world(&mut d, draw_world);
+        draw_gui(&mut d);
     }
+}
+
+fn draw_world(d: &mut RaylibMode2D<RaylibDrawHandle>) {
+    d.draw_rectangle(0, 0, 100, 100, Color::RED);
+}
+
+fn draw_gui(d: &mut RaylibDrawHandle) {
+    d.draw_text("Hello, world!", 12, 12, 20, Color::BLACK);
 }
