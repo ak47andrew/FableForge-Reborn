@@ -3,7 +3,7 @@ use raylib::RaylibHandle;
 use crate::config::{MAX_ZOOM, MIN_ZOOM, SCREEN, ZOOM_SPEED};
 
 pub struct SmartCamera {
-    pub  camera: Camera2D,
+    pub camera: Camera2D,
     is_dragging: bool,
     drag_start_position: Vector2,
     drag_start_camera_target: Vector2
@@ -53,6 +53,7 @@ impl SmartCamera {
 
             self.camera.zoom += wheel * ZOOM_SPEED;
             self.camera.zoom = self.camera.zoom.clamp(MIN_ZOOM, MAX_ZOOM);
+            self.camera.zoom = (self.camera.zoom * 100.0).round() / 100.0;
 
             let new_mouse_world_pos = rl.get_screen_to_world2D(rl.get_mouse_position(), self.camera);
 
