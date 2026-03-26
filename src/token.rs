@@ -24,7 +24,7 @@ impl Token {
         if rl.is_mouse_button_pressed(MouseButton::MOUSE_BUTTON_LEFT)
             && Rectangle::new(
                 -self.position.x, -self.position.y,
-                GRID_STEP as f32, GRID_STEP as f32,  // FIXME
+                GRID_STEP as f32, GRID_STEP as f32,
         ).check_collision_point_rec(mouse_pos){
             self.is_dragging = true;
         }
