@@ -53,6 +53,7 @@ impl SmartCamera {
 
             self.camera.zoom += wheel * ZOOM_SPEED;
             self.camera.zoom = self.camera.zoom.clamp(MIN_ZOOM, MAX_ZOOM);
+            self.camera.zoom = (self.camera.zoom * 100.0).round() / 100.0;
 
             let new_mouse_world_pos = rl.get_screen_to_world2D(rl.get_mouse_position(), self.camera);
 
