@@ -1,6 +1,7 @@
 mod smart_camera;
 mod config;
 mod token;
+mod websocket;
 
 use raylib::prelude::*;
 use crate::config::{GRID_STEP, SCREEN};

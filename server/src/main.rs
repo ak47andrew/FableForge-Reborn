@@ -1,6 +1,9 @@
+mod json_schemas;
+
 use warp::Filter;
 use futures::{StreamExt, SinkExt};
 use warp::ws::Message;
+use crate::json_schemas::{parse};
 
 #[tokio::main]
 async fn main() {
@@ -21,22 +24,19 @@ async fn handle_socket(ws: warp::ws::WebSocket) {
 
     while let Some(Ok(msg)) = rx.next().await {
         if msg.is_text() {
-            let content = msg.to_str().unwrap();
-            let parts = content.split(" ").collect::<Vec<&str>>();
-            let command = *parts.first().unwrap_or(&"LOSER");
-            let other = parts[1..].to_vec();
-            match command {
-                "TOKEN" => {
-                    // TODO: finish
+            let req = match parse(msg.to_str().unwrap()) {
+                Ok(ok) => {
+                    ok
                 }
-                _ => {
-                    tx.send(Message::text("Fucking moron toying with protocol. Go fuck yourself")).await.unwrap();
+                Err(err) => {
+                    println!("Failed to deserialize request: {}", err);
                     tx.send(Message::close()).await.unwrap();
                     break;
                 }
-            }
-            // println!("Got {}", msg.to_str().unwrap());
-            // tx.send(msg).await.unwrap(); // echo
+            };
+
+            println!("{:?}", req);
+            tx.send(Message::text("ok")).await.unwrap();
         }
         else if msg.is_close() {
             break;
