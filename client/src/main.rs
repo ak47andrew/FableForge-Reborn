@@ -4,17 +4,34 @@ mod token;
 mod websocket;
 
 use raylib::prelude::*;
+use raylib::prelude::KeyboardKey::{KEY_Q, KEY_SPACE};
 use crate::config::{GRID_STEP, SCREEN};
 use crate::smart_camera::SmartCamera;
 use crate::token::Token;
+use tokio::sync::mpsc;
+use tokio::runtime::Runtime;
+use common::{CSPacket, SCPacket};
+use crate::websocket::async_main;
 
 fn main() {
+    let (to_ws_tx, to_ws_rx) = mpsc::channel::<CSPacket>(100);
+    let (from_ws_tx, mut from_ws_rx) = mpsc::channel::<SCPacket>(100);
+
+    std::thread::spawn(|| {
+        let rt = Runtime::new().unwrap();
+        rt.block_on(async_main(
+            to_ws_rx,
+            from_ws_tx,
+        ));
+    });
+
     let (mut rl, mut thread) = init()
         .vsync()
         .size(SCREEN.x as i32, SCREEN.y as i32)
         .title("FableForge-Reborn")
         .build();
 
+    to_ws_tx.blocking_send(CSPacket::Token).unwrap();
 
     let mut camera = SmartCamera::new();
     let bg_texture = rl.load_texture(&thread, "bg.jpg").expect("Failed to load texture");
@@ -30,11 +47,40 @@ fn main() {
 
     while !rl.window_should_close() {
         let dt = rl.get_frame_time();
+
+        // if rl.is_key_pressed(KEY_SPACE) {
+        //     to_ws_tx.blocking_send(CSPacket::Token).unwrap();
+        // }
+        // if rl.is_key_pressed(KEY_Q) {
+        //     to_ws_tx.blocking_send(CSPacket::Move {x: token.position.x as f32, y: token.position.y as f32}).unwrap();
+        // }
+
+        // receive messages (non-blocking!)
+        while let Ok(msg) = from_ws_rx.try_recv() {
+            println!("Got from WS: {:?}", msg);
+
+            match msg {
+                SCPacket::Ok => {
+                    // Ok :3
+                }
+                SCPacket::TokenPos { x, y } => {
+                    token.try_update_pos(Vector2::new(x, y))
+                }
+            }
+        }
+
         let world_mouse = rl.get_screen_to_world2D(rl.get_mouse_position(), camera.camera);
+
 
         // Update
         camera.update_camera(&mut rl);
+        
+        let prev_pos = token.position;
         token.update(dt, &rl, world_mouse);
+        let new_pos = token.position;
+        if !token.is_dragging && prev_pos != new_pos {
+            to_ws_tx.blocking_send(CSPacket::Move {x: token.position.x, y: token.position.y}).unwrap();
+        }
 
         // Draw
         let mut d = rl.begin_drawing(&thread);

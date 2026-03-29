@@ -10,3 +10,4 @@ tokio-tungstenite = "0.29.0"
 futures-util = "0.3"
 tungstenite = "0.29.0"
 url = "2.5.8"
+common = {path = "../common"}

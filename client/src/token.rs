@@ -8,7 +8,7 @@ pub struct Token {
     pub texture: Texture2D,
     pub position: Vector2,
 
-    is_dragging: bool,
+    pub is_dragging: bool,
 }
 
 impl Token {
@@ -55,5 +55,11 @@ impl Token {
             (self.position.x / GRID_STEP as f32).round() * GRID_STEP as f32,
             (self.position.y / GRID_STEP as f32).round() * GRID_STEP as f32
         );
+    }
+
+    pub fn try_update_pos(&mut self, pos: Vector2) {
+        if !self.is_dragging {
+            self.position = pos;
+        }
     }
 }
