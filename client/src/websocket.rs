@@ -5,9 +5,11 @@ use common::{dump, parse, CSPacket, SCPacket};
 pub async fn async_main(
     mut to_ws_rx: mpsc::Receiver<CSPacket>,
     from_ws_tx: mpsc::Sender<SCPacket>,
+    id: u64,
 ) {
+    println!("id: {}", id);
     let ws = loop {
-        match tokio_tungstenite::connect_async("ws://127.0.0.1:3000/ws").await {
+        match tokio_tungstenite::connect_async(format!("ws://127.0.0.1:3000/ws/{}", id)).await {
             Ok((ws, _)) => break ws,
             Err(e) => {
                 println!("Retrying WS connect: {e}");

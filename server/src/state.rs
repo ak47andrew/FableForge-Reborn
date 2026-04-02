@@ -8,7 +8,14 @@ use std::sync::atomic::AtomicUsize;
 use common::TokenNetwork;
 
 pub static NEXT_CLIENT_ID: AtomicUsize = AtomicUsize::new(1);
-pub type SharedState = Arc<Mutex<GameState>>;
+type GameId = u64;
+pub type SharedGlobalState = Arc<Mutex<GlobalState>>;
+pub type SharedGameState = Arc<Mutex<GameState>>;
+
+pub struct GlobalState {
+    pub games: HashMap<GameId, Arc<Mutex<GameState>>>,
+}
+
 
 #[derive(Debug)]
 pub struct GameState {
@@ -16,8 +23,8 @@ pub struct GameState {
     pub tokens: HashMap<u32, TokenNetwork>,
 }
 
-pub fn with_state(state: SharedState)
-  -> impl Filter<Extract = (SharedState,), Error = std::convert::Infallible> + Clone
+pub fn with_state(state: SharedGlobalState)
+  -> impl Filter<Extract = (SharedGlobalState,), Error = std::convert::Infallible> + Clone
 {
     warp::any().map(move || state.clone())
 }

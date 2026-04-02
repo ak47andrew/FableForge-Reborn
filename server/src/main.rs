@@ -9,20 +9,37 @@ use warp::Filter;
 use futures::{StreamExt, SinkExt};
 use warp::ws::Message;
 use common::{dump, parse, CSPacket, SCPacket};
-use crate::state::{with_state, GameState, SharedState, NEXT_CLIENT_ID};
+use crate::state::{with_state, GameState, GlobalState, SharedGameState, SharedGlobalState, NEXT_CLIENT_ID};
 
 #[tokio::main]
 async fn main() {
-    let state = Arc::new(Mutex::new(GameState {
-        clients: HashMap::new(),
-        tokens: HashMap::new(),
+    let state = Arc::new(Mutex::new(GlobalState {
+        games: HashMap::new(),
     }));
 
     let ws_route = warp::path("ws")
+        .and(warp::path::param::<u64>())
+        .and(warp::path::end())
         .and(warp::ws())
         .and(with_state(state))
-        .map(|ws: warp::ws::Ws, state| {
-            ws.on_upgrade(move |socket| handle_socket(socket, state))
+        .map(|id: u64, ws: warp::ws::Ws, global_state: SharedGlobalState | {
+            ws.on_upgrade(move |socket| async move {
+                let game_state = {
+                    let mut global = global_state.lock().await;
+
+                    global.games
+                        .entry(id.clone())
+                        .or_insert_with(|| {
+                            Arc::new(Mutex::new(GameState {
+                                clients: HashMap::new(),
+                                tokens: HashMap::new(),
+                            }))
+                        })
+                        .clone()
+                };
+
+                handle_socket(socket, game_state).await;
+            })
         });
 
     warp::serve(ws_route)
@@ -30,7 +47,7 @@ async fn main() {
         .await;
 }
 
-async fn handle_socket(ws: warp::ws::WebSocket, state: SharedState) {
+async fn handle_socket(ws: warp::ws::WebSocket, state: SharedGameState) {
     let (mut ws_tx, mut ws_rx) = ws.split();
     let (tx, mut rx) = mpsc::unbounded_channel::<Message>();
     let index = NEXT_CLIENT_ID.fetch_add(1, Ordering::Relaxed);

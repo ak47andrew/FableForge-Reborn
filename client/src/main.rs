@@ -5,7 +5,7 @@ mod websocket;
 
 use std::collections::HashMap;
 use raylib::prelude::*;
-use raylib::prelude::KeyboardKey::{KEY_N, KEY_Q, KEY_SPACE};
+use raylib::prelude::KeyboardKey::{KEY_N, KEY_Q};
 use crate::config::{GRID_STEP, SCREEN};
 use crate::smart_camera::SmartCamera;
 use crate::token::Token;
@@ -23,9 +23,11 @@ fn main() {
         rt.block_on(async_main(
             to_ws_rx,
             from_ws_tx,
+            std::env::args().collect::<Vec<String>>().get(1).unwrap_or(&"0".to_string()).parse::<u64>().expect("Invalid id")
         ));
     });
 
+    #[allow(unused_mut)]
     let (mut rl, mut thread) = init()
         .vsync()
         .size(SCREEN.x as i32, SCREEN.y as i32)
