@@ -3,14 +3,15 @@ mod config;
 mod token;
 mod websocket;
 
+use std::collections::HashMap;
 use raylib::prelude::*;
-use raylib::prelude::KeyboardKey::{KEY_Q, KEY_SPACE};
+use raylib::prelude::KeyboardKey::{KEY_N, KEY_Q, KEY_SPACE};
 use crate::config::{GRID_STEP, SCREEN};
 use crate::smart_camera::SmartCamera;
 use crate::token::Token;
 use tokio::sync::mpsc;
 use tokio::runtime::Runtime;
-use common::{CSPacket, SCPacket};
+use common::{CSPacket, SCPacket, TokenNetwork, Vector2D};
 use crate::websocket::async_main;
 
 fn main() {
@@ -31,31 +32,47 @@ fn main() {
         .title("FableForge-Reborn")
         .build();
 
-    to_ws_tx.blocking_send(CSPacket::Token).unwrap();
-
     let mut camera = SmartCamera::new();
     let bg_texture = rl.load_texture(&thread, "bg.jpg").expect("Failed to load texture");
 
     let icon = Image::load_image("logo.png").expect("Failed to load image");
     rl.set_window_icon(icon);
 
-    let token_texture = rl.load_texture(&thread, "token.png").expect("Failed to load image");
-    let mut token = Token::new(
-        token_texture,
-        Vector2::zero(),
-    );
+    let mut tokens = HashMap::<u32, Token>::new();
 
     while !rl.window_should_close() {
         let dt = rl.get_frame_time();
+        let world_mouse = rl.get_screen_to_world2D(rl.get_mouse_position(), camera.camera);
 
-        // if rl.is_key_pressed(KEY_SPACE) {
-        //     to_ws_tx.blocking_send(CSPacket::Token).unwrap();
-        // }
-        // if rl.is_key_pressed(KEY_Q) {
-        //     to_ws_tx.blocking_send(CSPacket::Move {x: token.position.x as f32, y: token.position.y as f32}).unwrap();
-        // }
+        if rl.is_key_pressed(KEY_N) {
+            let id = tokens.keys().max().unwrap_or(&0u32) + 1;
+            let mut token = Token::new(rl.load_texture(&thread, "token.png").expect("Failed to load image"), -world_mouse);
+            token.snap_to_grid();
+            to_ws_tx.blocking_send(CSPacket::AddToken {
+                token: TokenNetwork {
+                    id,
+                    pos: Vector2D {
+                        x: token.position.x,
+                        y: token.position.y,
+                    }
+                }
+            }).unwrap();
+            tokens.insert(id, token);
+        } else if rl.is_key_pressed(KEY_Q) {
+            let mut selected_token = None;
+            for (id, value) in tokens.iter().clone() {
+                if value.is_dragging {
+                    selected_token = Some(id.clone());
+                }
+            }
+            if let Some(selected_token) = selected_token {
+                tokens.remove(&selected_token);
+                to_ws_tx.blocking_send(CSPacket::DeleteToken {
+                    token: selected_token,
+                }).unwrap();
+            }
+        }
 
-        // receive messages (non-blocking!)
         while let Ok(msg) = from_ws_rx.try_recv() {
             println!("Got from WS: {:?}", msg);
 
@@ -63,23 +80,43 @@ fn main() {
                 SCPacket::Ok => {
                     // Ok :3
                 }
-                SCPacket::TokenPos { x, y } => {
-                    token.try_update_pos(Vector2::new(x, y))
+                SCPacket::MoveToken { token } => {
+                    let id = token.id;
+                    tokens.get_mut(&id).unwrap().position = Vector2::new(token.pos.x, token.pos.y);
+                }
+                SCPacket::AddToken { token } => {
+                    tokens.insert(token.id, Token::new(
+                        rl.load_texture(&thread, "token.png").expect("Failed to load image"),
+                        Vector2::new(token.pos.x, token.pos.y),
+                    ));
+                }
+                SCPacket::DeleteToken { token } => {
+                    tokens.remove(&token);
                 }
             }
         }
 
-        let world_mouse = rl.get_screen_to_world2D(rl.get_mouse_position(), camera.camera);
-
-
         // Update
         camera.update_camera(&mut rl);
-        
-        let prev_pos = token.position;
-        token.update(dt, &rl, world_mouse);
-        let new_pos = token.position;
-        if !token.is_dragging && prev_pos != new_pos {
-            to_ws_tx.blocking_send(CSPacket::Move {x: token.position.x, y: token.position.y}).unwrap();
+
+        for (id, token) in tokens.iter_mut() {
+            let prev_pos = token.position;
+            let result =  token.update(dt, &rl, world_mouse);
+            let new_pos = token.position;
+            if !token.is_dragging && prev_pos != new_pos {
+                to_ws_tx.blocking_send(CSPacket::MoveToken {
+                    token: TokenNetwork {
+                        id: id.clone(),
+                        pos: Vector2D {
+                            x: new_pos.x,
+                            y: new_pos.y,
+                        }
+                    }
+                }).unwrap();
+            }
+            if result {
+                break
+            }
         }
 
         // Draw
@@ -87,12 +124,12 @@ fn main() {
 
         d.clear_background(Color::DARKGRAY);
 
-        camera.draw_world(&mut d, |dd| draw_world(dd, &bg_texture, &token, world_mouse));
+        camera.draw_world(&mut d, |dd| draw_world(dd, &bg_texture, tokens.values().into_iter().collect()));
         draw_gui(&mut d, &camera);
     }
 }
 
-fn draw_world(d: &mut RaylibMode2D<RaylibDrawHandle>, bg: &Texture2D, token: &Token, mouse_pos: Vector2) {
+fn draw_world(d: &mut RaylibMode2D<RaylibDrawHandle>, bg: &Texture2D, tokens: Vec<&Token>) {
     d.draw_texture(bg, 0, 0, Color::WHITE);
 
     for x in (GRID_STEP..bg.width()).step_by(GRID_STEP as usize) {
@@ -103,7 +140,9 @@ fn draw_world(d: &mut RaylibMode2D<RaylibDrawHandle>, bg: &Texture2D, token: &To
         d.draw_line(0, y, bg.width(), y, Color::WHITE);
     }
 
-    token.draw(d);
+    for token in tokens {
+        token.draw(d);
+    }
 }
 
 fn draw_gui(d: &mut RaylibDrawHandle, camera: &SmartCamera) {

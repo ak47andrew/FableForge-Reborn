@@ -15,8 +15,7 @@ use crate::state::{with_state, GameState, SharedState, NEXT_CLIENT_ID};
 async fn main() {
     let state = Arc::new(Mutex::new(GameState {
         clients: HashMap::new(),
-        token_pos_x: 0.0,
-        token_pos_y: 0.0,
+        tokens: HashMap::new(),
     }));
 
     let ws_route = warp::path("ws")
@@ -47,6 +46,13 @@ async fn handle_socket(ws: warp::ws::WebSocket, state: SharedState) {
     {
         let mut state = state.lock().await;
         state.clients.insert(index, tx.clone());
+
+        let sender = tx.clone();
+        for value in state.tokens.values() {
+            sender.send(Message::text(dump(
+                CSPacket::AddToken {token: *value}
+            ))).unwrap();
+        }
     }
 
     while let Some(Ok(msg)) = ws_rx.next().await {
@@ -58,15 +64,37 @@ async fn handle_socket(ws: warp::ws::WebSocket, state: SharedState) {
                         let mut state = state.lock().await;
 
                         match packet {
-                            CSPacket::Token => {
-                                state.gen_tokenpos_packet()
-                            }
-                            CSPacket::Move { x, y } => {
-                                state.token_pos_x = x;
-                                state.token_pos_y = y;
-                                let packet = state.gen_tokenpos_packet();
+                            CSPacket::MoveToken { token } => {
+                                state.tokens.insert(token.id, token);
+                                let packet = SCPacket::MoveToken {
+                                    token: state.tokens[&token.id]
+                                };
                                 for (_, client) in state.clients.iter() {
-                                    client.send(Message::text(dump(packet))).unwrap();
+                                    client.send(Message::text(dump(packet.clone()))).unwrap();
+                                }
+
+                                SCPacket::Ok
+                            },
+                            CSPacket::AddToken { token } => {
+                                state.tokens.insert(token.id, token);
+
+                                let packet = SCPacket::AddToken {
+                                    token: state.tokens[&token.id]
+                                };
+                                for (_, client) in state.clients.iter() {
+                                    client.send(Message::text(dump(packet.clone()))).unwrap();
+                                }
+
+                                SCPacket::Ok
+                            },
+                            CSPacket::DeleteToken { token } => {
+                                state.tokens.remove(&token);
+
+                                let packet = SCPacket::DeleteToken {
+                                    token
+                                };
+                                for (_, client) in state.clients.iter() {
+                                    client.send(Message::text(dump(packet.clone()))).unwrap();
                                 }
 
                                 SCPacket::Ok

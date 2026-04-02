@@ -2,18 +2,33 @@ use serde::{Deserialize, Serialize};
 use serde::de::DeserializeOwned;
 use serde_json::Error;
 
-#[derive(Deserialize, Serialize, Debug, Copy, Clone)]
+#[derive(Deserialize, Serialize, Debug, Clone)]
 #[serde(tag = "type", rename_all = "snake_case", content = "data")]
 pub enum CSPacket {
-    Token,
-    Move { x: f32, y: f32 },
+    AddToken { token: TokenNetwork },
+    MoveToken { token: TokenNetwork },
+    DeleteToken { token: u32 },
 }
 
-#[derive(Deserialize, Serialize, Debug, Copy, Clone)]
+#[derive(Deserialize, Serialize, Debug, Clone)]
 #[serde(tag = "type", rename_all = "snake_case", content = "data")]
 pub enum SCPacket {
     Ok,
-    TokenPos {x: f32, y: f32},
+    AddToken { token: TokenNetwork },
+    MoveToken { token: TokenNetwork },
+    DeleteToken { token: u32 },
+}
+
+#[derive(Deserialize, Serialize, Debug, Copy, Clone)]
+pub struct TokenNetwork {
+    pub id: u32,
+    pub pos: Vector2D
+}
+
+#[derive(Deserialize, Serialize, Debug, Copy, Clone)]
+pub struct Vector2D {
+    pub x: f32,
+    pub y: f32,
 }
 
 pub fn parse<T>(text: &str) -> Result<T, Error>
