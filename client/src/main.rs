@@ -4,6 +4,8 @@ mod token;
 mod websocket;
 
 use std::collections::HashMap;
+use std::sync::Arc;
+use std::sync::atomic::AtomicBool;
 use raylib::prelude::*;
 use raylib::prelude::KeyboardKey::{KEY_N, KEY_Q};
 use crate::config::{GRID_STEP, SCREEN};
@@ -14,16 +16,23 @@ use tokio::runtime::Runtime;
 use common::{CSPacket, SCPacket, TokenNetwork, Vector2D};
 use crate::websocket::async_main;
 
+fn get_id() -> u64 {  // TODO: add UI for getting this and button on top right + config
+    std::env::args().collect::<Vec<String>>().get(1).unwrap_or(&"0".to_string()).parse::<u64>().expect("Invalid id")
+}
+
 fn main() {
     let (to_ws_tx, to_ws_rx) = mpsc::channel::<CSPacket>(100);
     let (from_ws_tx, mut from_ws_rx) = mpsc::channel::<SCPacket>(100);
+    let connected_flag = Arc::new(AtomicBool::new(false));
+    let flag_clone = connected_flag.clone();
 
     std::thread::spawn(|| {
         let rt = Runtime::new().unwrap();
         rt.block_on(async_main(
             to_ws_rx,
             from_ws_tx,
-            std::env::args().collect::<Vec<String>>().get(1).unwrap_or(&"0".to_string()).parse::<u64>().expect("Invalid id")
+            get_id(),
+            flag_clone
         ));
     });
 
@@ -31,7 +40,7 @@ fn main() {
     let (mut rl, mut thread) = init()
         .vsync()
         .size(SCREEN.x as i32, SCREEN.y as i32)
-        .title("FableForge-Reborn")
+        .title(format!("FableForge-Reborn (Id: {})", get_id()).as_str())
         .build();
 
     let mut camera = SmartCamera::new();
@@ -44,8 +53,42 @@ fn main() {
 
     while !rl.window_should_close() {
         let dt = rl.get_frame_time();
+
+        if !connected_flag.load(std::sync::atomic::Ordering::SeqCst) {
+            let mut d = rl.begin_drawing(&thread);
+
+            d.clear_background(Color::DARKGRAY);
+
+            let text = "Connecting...";
+            let font_size = 32;
+            let width = d.measure_text(text, font_size) as f32;
+            let height = font_size as f32;
+            let x = (SCREEN.x - width) as i32 / 2;
+            let y = (SCREEN.y - height) as i32 / 2;
+            let margin = 100.0;
+
+            d.draw_rectangle_rounded(
+                Rectangle::new(
+                    x as f32 - margin, y as f32 - margin,
+                     width + 2.0 * margin, height + 2.0 * margin
+                ),
+                0.3,
+                9,
+                Color::new(
+                    40,
+                    158,
+                    212,
+                    200
+                )
+            );
+            d.draw_text(text, x, y, font_size, Color::RED);
+
+            continue;
+        }
+
         let world_mouse = rl.get_screen_to_world2D(rl.get_mouse_position(), camera.camera);
 
+        // TODO (?): Right click menu?
         if rl.is_key_pressed(KEY_N) {
             let id = tokens.keys().max().unwrap_or(&0u32) + 1;
             let mut token = Token::new(rl.load_texture(&thread, "token.png").expect("Failed to load image"), -world_mouse);
@@ -88,7 +131,7 @@ fn main() {
                 }
                 SCPacket::AddToken { token } => {
                     tokens.insert(token.id, Token::new(
-                        rl.load_texture(&thread, "token.png").expect("Failed to load image"),
+                        rl.load_texture(&thread, "token.png").expect("Failed to load image"),  // TODO: loading images from the server
                         Vector2::new(token.pos.x, token.pos.y),
                     ));
                 }
