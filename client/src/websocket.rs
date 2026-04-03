@@ -8,12 +8,11 @@ use common::{dump, parse, CSPacket, SCPacket};
 pub async fn async_main(
     mut to_ws_rx: mpsc::Receiver<CSPacket>,
     from_ws_tx: mpsc::Sender<SCPacket>,
-    id: u64,
+    url: String,
     connected_flag: Arc<AtomicBool>,
 ) {
-    println!("id: {}", id);
     let ws = loop {
-        match tokio_tungstenite::connect_async(format!("ws://127.0.0.1:3000/ws/{}", id)).await {
+        match tokio_tungstenite::connect_async(url.clone()).await {
             Ok((ws, _)) => {
                 connected_flag.store(true, std::sync::atomic::Ordering::SeqCst);
                 break ws

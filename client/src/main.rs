@@ -31,7 +31,7 @@ fn main() {
         rt.block_on(async_main(
             to_ws_rx,
             from_ws_tx,
-            get_id(),
+            format!("ws://127.0.0.1:3000/ws/{}", get_id()),
             flag_clone
         ));
     });
@@ -59,10 +59,10 @@ fn main() {
 
             d.clear_background(Color::DARKGRAY);
 
-            let text = "Connecting...";
+            let text = format!("Waiting for server...\n\nConnecting to ws://127.0.0.1:3000/ws/{}", get_id());
             let font_size = 32;
-            let width = d.measure_text(text, font_size) as f32;
-            let height = font_size as f32;
+            let width = d.measure_text(text.as_str(), font_size) as f32;
+            let height = (text.chars().filter(|&c| c == '\n').count() as f32 + 1.0) * font_size as f32;
             let x = (SCREEN.x - width) as i32 / 2;
             let y = (SCREEN.y - height) as i32 / 2;
             let margin = 100.0;
@@ -81,7 +81,7 @@ fn main() {
                     200
                 )
             );
-            d.draw_text(text, x, y, font_size, Color::RED);
+            d.draw_text(text.as_str(), x, y, font_size, Color::RED);
 
             continue;
         }
