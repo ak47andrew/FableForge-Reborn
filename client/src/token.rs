@@ -2,7 +2,7 @@ use raylib::color::Color;
 use raylib::drawing::{RaylibDrawHandle, RaylibMode2D};
 use raylib::prelude::{MouseButton, RaylibDraw, Rectangle, Texture2D, Vector2};
 use raylib::RaylibHandle;
-use crate::config::GRID_STEP;
+use crate::consts::GRID_STEP;
 
 pub struct Token {
     pub texture: Texture2D,

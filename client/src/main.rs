@@ -1,5 +1,5 @@
 mod smart_camera;
-mod config;
+mod consts;
 mod token;
 mod websocket;
 
@@ -8,7 +8,7 @@ use std::sync::Arc;
 use std::sync::atomic::AtomicBool;
 use raylib::prelude::*;
 use raylib::prelude::KeyboardKey::{KEY_N, KEY_Q};
-use crate::config::{GRID_STEP, SCREEN};
+use crate::consts::{GRID_STEP, SCREEN};
 use crate::smart_camera::SmartCamera;
 use crate::token::Token;
 use tokio::sync::mpsc;

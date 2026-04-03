@@ -1,6 +1,6 @@
 use raylib::prelude::{Camera2D, MouseButton, RaylibDrawHandle, RaylibMode2D, RaylibMode2DExt, Vector2};
 use raylib::RaylibHandle;
-use crate::config::{MAX_ZOOM, MIN_ZOOM, SCREEN, ZOOM_SPEED};
+use crate::consts::{MAX_ZOOM, MIN_ZOOM, SCREEN, ZOOM_SPEED};
 
 pub struct SmartCamera {
     pub camera: Camera2D,
