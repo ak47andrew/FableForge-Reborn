@@ -2,36 +2,39 @@ mod smart_camera;
 mod consts;
 mod token;
 mod websocket;
+mod config;
+mod button;
 
 use std::collections::HashMap;
 use std::sync::Arc;
 use std::sync::atomic::AtomicBool;
 use raylib::prelude::*;
 use raylib::prelude::KeyboardKey::{KEY_N, KEY_Q};
-use crate::consts::{GRID_STEP, SCREEN};
+use crate::consts::{BUTTON_BASE_SIZE, GRID_STEP, SCREEN};
 use crate::smart_camera::SmartCamera;
 use crate::token::Token;
 use tokio::sync::mpsc;
 use tokio::runtime::Runtime;
 use common::{CSPacket, SCPacket, TokenNetwork, Vector2D};
+use crate::button::Button;
+use crate::config::Config;
 use crate::websocket::async_main;
 
-fn get_id() -> u64 {  // TODO: add UI for getting this and button on top right + config
-    std::env::args().collect::<Vec<String>>().get(1).unwrap_or(&"0".to_string()).parse::<u64>().expect("Invalid id")
-}
 
 fn main() {
     let (to_ws_tx, to_ws_rx) = mpsc::channel::<CSPacket>(100);
     let (from_ws_tx, mut from_ws_rx) = mpsc::channel::<SCPacket>(100);
     let connected_flag = Arc::new(AtomicBool::new(false));
-    let flag_clone = connected_flag.clone();
+    let cfg = Config::load();
 
+    let flag_clone = connected_flag.clone();
+    let conn_src = cfg.get_conn_path();
     std::thread::spawn(|| {
         let rt = Runtime::new().unwrap();
         rt.block_on(async_main(
             to_ws_rx,
             from_ws_tx,
-            format!("ws://127.0.0.1:3000/ws/{}", get_id()),
+            conn_src,
             flag_clone
         ));
     });
@@ -40,8 +43,16 @@ fn main() {
     let (mut rl, mut thread) = init()
         .vsync()
         .size(SCREEN.x as i32, SCREEN.y as i32)
-        .title(format!("FableForge-Reborn (Id: {})", get_id()).as_str())
+        .title(format!("FableForge-Reborn (Id: {})", cfg.id).as_str())
         .build();
+
+    let cfg_butt = Button::new(
+        Vector2::new(SCREEN.x - BUTTON_BASE_SIZE, 0.0),
+        Vector2::new(BUTTON_BASE_SIZE, BUTTON_BASE_SIZE),
+        rl.load_texture(&thread, "token.png").expect("Failed to load image"),
+        Color::YELLOW,
+        Color::YELLOWGREEN,
+    );
 
     let mut camera = SmartCamera::new();
     let bg_texture = rl.load_texture(&thread, "bg.jpg").expect("Failed to load texture");
@@ -59,7 +70,7 @@ fn main() {
 
             d.clear_background(Color::DARKGRAY);
 
-            let text = format!("Waiting for server...\n\nConnecting to ws://127.0.0.1:3000/ws/{}", get_id());
+            let text = format!("Waiting for server...\n\nConnecting to {}", cfg.get_conn_path());
             let font_size = 32;
             let width = d.measure_text(text.as_str(), font_size) as f32;
             let height = (text.chars().filter(|&c| c == '\n').count() as f32 + 1.0) * font_size as f32;
@@ -86,6 +97,7 @@ fn main() {
             continue;
         }
 
+        let gui_mouse = rl.get_mouse_position();
         let world_mouse = rl.get_screen_to_world2D(rl.get_mouse_position(), camera.camera);
 
         // TODO (?): Right click menu?
@@ -165,12 +177,13 @@ fn main() {
         }
 
         // Draw
+        let is_btn_release = rl.is_mouse_button_released(MouseButton::MOUSE_BUTTON_LEFT);
         let mut d = rl.begin_drawing(&thread);
 
         d.clear_background(Color::DARKGRAY);
 
         camera.draw_world(&mut d, |dd| draw_world(dd, &bg_texture, tokens.values().into_iter().collect()));
-        draw_gui(&mut d, &camera);
+        draw_gui(&mut d, &cfg_butt, &gui_mouse, is_btn_release);
     }
 }
 
@@ -190,8 +203,8 @@ fn draw_world(d: &mut RaylibMode2D<RaylibDrawHandle>, bg: &Texture2D, tokens: Ve
     }
 }
 
-fn draw_gui(d: &mut RaylibDrawHandle, camera: &SmartCamera) {
-    // Just some temp GUI for now
-    d.draw_text(format!("Position: {:?}", camera.camera.target).as_str(), 10, 10, 30, Color::WHITE);
-    d.draw_text(format!("Zoom: {:?}", camera.camera.zoom).as_str(), 10, 10 * 2 + 30 * 1, 30, Color::WHITE);
+fn draw_gui(d: &mut RaylibDrawHandle, cfg_butt: &Button, mouse_pos: &Vector2, is_btn_released: bool) {
+    if cfg_butt.draw(d, mouse_pos, is_btn_released) {
+        println!("Pressed!");
+    }
 }
